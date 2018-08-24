@@ -71,9 +71,18 @@ public class CloudVideoPlayer{
             cloud.initStructs((uint)i,colorvideo, depthvideo,cloudobj);
 
             _clouds.Add(s, cloud);            
-
+            
         }
+    }
 
+    public float getDuration()
+    {
+        return _clouds.Values.ElementAt<PointCloudDepth>(0).getDuration();
+    }
+
+    public float getTime()
+    {
+        return _clouds.Values.ElementAt<PointCloudDepth>(0).getTime();
     }
 
     public void Skip5Sec(){

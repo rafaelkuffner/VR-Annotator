@@ -30,6 +30,7 @@ public class InputManager : MonoBehaviour {
     private bool _playing;
 
     AnnotationManager annotationManager;
+    private GameObject _slider;
 
     public enum MenuOpened
     {
@@ -98,6 +99,8 @@ public class InputManager : MonoBehaviour {
         _menu = MenuOpened.None;
         _video = null;
         _playSpeed = 1;
+        _slider = GameObject.Find("Timeline");
+
 	}
 
     void EnableRightPointer()
@@ -313,6 +316,16 @@ public class InputManager : MonoBehaviour {
         annotationManager.SetRightHandController(_rightController);
 
         InputOpenMenus();
+
+        if (_video != null)
+        {
+            float ratio = _video.getTime() / _video.getDuration();
+            _slider.SetActive(true);
+            _slider.GetComponentInChildren<Slider>().value = ratio;
+            _slider.transform.position = new Vector3(0, 2.5f, 0);
+            _slider.transform.forward =  Camera.main.transform.forward;
+
+        }
 
         if (_menu == MenuOpened.DatasetSelect)
         {

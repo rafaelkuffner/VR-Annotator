@@ -153,6 +153,16 @@ public class PointCloudDepth : MonoBehaviour
     //    }
     //}
 
+    public float getDuration()
+    {
+        return _player.frameCount / _player.frameRate;
+    }
+
+    public float getTime()
+    {
+        return (float) _player.time;
+    }
+
     public void SetSpeed(float speed)
     {
         _player.playbackSpeed = speed;
@@ -198,7 +208,7 @@ public class PointCloudDepth : MonoBehaviour
         play.sendFrameReadyEvents = true;
         play.frameReady += this.OnNewFrame;
         play.errorReceived += this.errorReceived;
-        play.seekCompleted += this.VideoSeekCompleted;
+       // play.seekCompleted += this.VideoSeekCompleted;
         play.skipOnDrop = false;
         _player = play;
         _player.Prepare();
