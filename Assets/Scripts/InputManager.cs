@@ -1,0 +1,404 @@
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UnityEngine.UI;
+using Valve.VR;
+
+public class InputManager : MonoBehaviour {
+
+    public GameObject _rightHand;
+    public GameObject _leftHand;
+    public GameObject _head;
+    private SteamVR_TrackedObject _rightObj = null;
+    private SteamVR_TrackedObject _leftObj = null;
+    private SteamVR_Controller.Device _rightController;
+    private SteamVR_Controller.Device _leftController;
+    private SteamVR_Controller.Device device;
+    private MenuOpened _menu;
+    private CloudVideoPlayer _video;
+    private float _playSpeed;
+
+    //Laser Pointer Variables
+    private GameObject _rightHolder;
+    private GameObject _rightPointer;
+    private float _pointerThickness = 0.002f;
+    public Color _pointerColor;
+
+    private GameObject _leftHolder;
+    private GameObject _leftPointer;
+
+    private bool _playing;
+
+    AnnotationManager annotationManager;
+
+    public enum MenuOpened
+    {
+        DatasetSelect,ColorSelect,AnnotationSelect,None
+    }
+
+    void setupRightPointer()
+    {
+        _rightHolder = new GameObject();
+        _rightHolder.transform.parent = _rightHand.transform;
+        _rightHolder.transform.localPosition = Vector3.zero;
+        _rightHolder.transform.localRotation = Quaternion.identity;
+
+        _rightPointer = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        _rightPointer.transform.parent = _rightHolder.transform;
+        _rightPointer.transform.localScale = new Vector3(_pointerThickness, _pointerThickness, 100f);
+        _rightPointer.transform.localPosition = new Vector3(0f, 0f, 50f);
+        _rightPointer.transform.localRotation = Quaternion.identity;
+        BoxCollider collider = _rightPointer.GetComponent<BoxCollider>();
+        collider.isTrigger = true;
+        Rigidbody rigidBody = _rightPointer.AddComponent<Rigidbody>();
+        rigidBody.isKinematic = true;
+
+        _pointerColor = new Color(0.2f, 0.2f, 0.2f);
+        Material newMaterial = new Material(Shader.Find("Unlit/Color"));
+        newMaterial.SetColor("_Color", _pointerColor);
+        _rightPointer.GetComponent<MeshRenderer>().material = newMaterial;
+    }
+
+    void setupLeftPointer()
+    {
+        _leftHolder = new GameObject();
+        _leftHolder.transform.parent = _leftHand.transform;
+        _leftHolder.transform.localPosition = Vector3.zero;
+        _leftHolder.transform.localRotation = Quaternion.identity;
+
+        _leftPointer = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        _leftPointer.transform.parent = _leftHolder.transform;
+        _leftPointer.transform.localScale = new Vector3(_pointerThickness, _pointerThickness, 100f);
+        _leftPointer.transform.localPosition = new Vector3(0f, 0f, 50f);
+        _leftPointer.transform.localRotation = Quaternion.identity;
+        BoxCollider collider = _leftPointer.GetComponent<BoxCollider>();
+        collider.isTrigger = true;
+        Rigidbody rigidBody = _leftPointer.AddComponent<Rigidbody>();
+        rigidBody.isKinematic = true;
+
+        _pointerColor = new Color(0.5f, 0.5f, 0.5f);
+        Material newMaterial = new Material(Shader.Find("Unlit/Color"));
+        newMaterial.SetColor("_Color", _pointerColor);
+        _leftPointer.GetComponent<MeshRenderer>().material = newMaterial;
+    }
+	// Use this for initialization
+
+	void Start () {
+        _rightObj = _rightHand.GetComponent<SteamVR_TrackedObject>();
+        _leftObj = _leftHand.GetComponent<SteamVR_TrackedObject>();
+        setupRightPointer();
+        setupLeftPointer();
+
+        GameObject annotationManagerGO = GameObject.Find("AnnotationManager");
+        annotationManager = annotationManagerGO.GetComponent<AnnotationManager>();
+        annotationManager.SetRightHand(_rightHand);
+
+        DisableRightPointer();
+        DisableLeftPointer();
+        _menu = MenuOpened.None;
+        _video = null;
+        _playSpeed = 1;
+	}
+
+    void EnableRightPointer()
+    {
+        _rightPointer.SetActive(true);
+    }
+
+    void EnableLeftPointer()
+    {
+        _leftPointer.SetActive(true);
+    }
+    void DisableRightPointer()
+    {
+        _rightPointer.SetActive(false);
+    }
+    void DisableLeftPointer()
+    {
+        _leftPointer.SetActive(false);
+    }
+
+    void InputOpenMenus()
+    {
+
+        if (_leftController.GetPressUp(SteamVR_Controller.ButtonMask.ApplicationMenu))
+        {
+            GameObject menu;
+            CloseAllMenus();
+
+            if (_menu != MenuOpened.DatasetSelect)
+            {
+                menu = Instantiate(Resources.Load("Prefabs/CloudMenu")) as GameObject;
+                menu.name = "DatasetSelect";
+                menu.transform.position = _head.transform.position + (_head.transform.forward * 2);
+                Vector3 rot = Camera.main.transform.forward;
+                rot.y = 0.0f;
+                menu.transform.rotation = Quaternion.LookRotation(rot);
+                _menu = MenuOpened.DatasetSelect;
+                EnableLeftPointer();
+            }
+            else
+            {
+                _menu = MenuOpened.None;
+                DisableLeftPointer();
+            }
+        }
+
+        if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.ApplicationMenu))
+        {
+            GameObject menu;
+            CloseAllMenus();
+
+            if (_menu != MenuOpened.ColorSelect)
+            {
+                menu = Instantiate(Resources.Load("Prefabs/ColorMenu")) as GameObject;
+                menu.name = "ColorSelect";
+                menu.transform.position = _head.transform.position + (_head.transform.forward * 2);
+                Vector3 rot = Camera.main.transform.forward;
+                rot.y = 0.0f;
+                menu.transform.rotation = Quaternion.LookRotation(rot);
+                _menu = MenuOpened.ColorSelect;
+                EnableRightPointer();
+            }
+            else
+            {
+                _menu = MenuOpened.None;
+                DisableRightPointer();
+            }
+        }
+        if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Touchpad))
+        {
+            GameObject menu;
+            CloseAllMenus();
+
+            if (_menu != MenuOpened.AnnotationSelect)
+            {
+                menu = Instantiate(Resources.Load("Prefabs/AnnotationMenu")) as GameObject;
+                menu.name = "AnnotationSelect";
+                menu.transform.position = _head.transform.position + (_head.transform.forward * 2);
+                Vector3 rot = Camera.main.transform.forward;
+                rot.y = 0.0f;
+                menu.transform.rotation = Quaternion.LookRotation(rot);
+                _menu = MenuOpened.AnnotationSelect;
+            }
+            else
+            {
+                _menu = MenuOpened.None;
+            } 
+        }
+    }
+
+    public void SetPlaybackSpeed(float speed)
+    {
+        _playSpeed = speed;
+        print("Changing video speed to " + speed);
+        _video.setSpeed(speed);
+    }
+
+    void SelectDataset()
+    {
+        Ray raycast = new Ray(_leftHand.transform.position, _leftHand.transform.forward);
+        RaycastHit hit;
+        bool bHit = Physics.Raycast(raycast, out hit);
+        if (hit.transform != null) {
+             Button b = hit.transform.gameObject.GetComponent<Button>();
+             if (b != null) { 
+                 b.Select();
+
+                 if (_leftController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger))
+                 {
+                     if (b.name == "PlaySpeed")
+                     {
+                         SetPlaybackSpeed(float.Parse(b.GetComponent<VRUIItem>().value));
+                         return;
+                     }
+                     if (_video != null && _video.configFile == b.name)
+                     {
+                         return;
+                     }
+                     else if (_video != null && _video.configFile != b.name){
+                        _video.Close();
+                     }
+                     
+                     _video = new CloudVideoPlayer(b.name);
+                     annotationManager.SetCloudVideo(_video);
+                     CloseAllMenus();
+                     DisableLeftPointer();
+                     _menu = MenuOpened.None;
+                 }
+             }
+        }
+    }
+
+    void SelectColor()
+    {
+        Ray raycast = new Ray(_rightHand.transform.position, _rightHand.transform.forward);
+        RaycastHit hit;
+        bool bHit = Physics.Raycast(raycast, out hit);
+        if (hit.transform != null && hit.transform.name == "ColorWheel")
+        {
+            Renderer rend = hit.transform.GetComponent<Renderer>();
+            Texture2D tex = rend.material.mainTexture as Texture2D;
+            Vector2 pixelUV = hit.textureCoord;
+            pixelUV.x *= tex.width;
+            pixelUV.y *= tex.height;
+            Color p = tex.GetPixel((int)pixelUV.x, (int)pixelUV.y);
+            _pointerColor = p;
+            _rightPointer.GetComponent<MeshRenderer>().material.SetColor("_Color",p);
+            if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger))
+            {
+                CloseAllMenus();
+                DisableRightPointer();
+                _menu = MenuOpened.None;
+            }
+        }
+    }
+
+    void SelectAnnotationType()
+    {
+
+       if (_rightController.GetPress(SteamVR_Controller.ButtonMask.Touchpad))
+        {
+            if (!annotationManager.IsAnnotationActive)
+            {
+                Vector2 touchpad = _rightController.GetAxis(EVRButtonId.k_EButton_SteamVR_Touchpad);
+                //Debug.Log("Axis x = " + touchpad.x + " | Axis y = " + touchpad.y);
+                
+                if (touchpad.y > 0.7f)
+                {
+                    print("HighlightPoints Annotation");
+                    annotationManager.HandleHighlightPointsAnnotation();
+                }
+                else if (touchpad.y < -0.7f)
+                {
+                    print("Mark Annotation");
+                    annotationManager.HandleMarkAnnotation(_head, _rightPointer);
+                }
+                else if (touchpad.x > 0.7f)
+                {
+                    print("SpeechToText Annotation");
+                    annotationManager.HandleSpeechToTextAnnotation();
+                }
+                else if (touchpad.x < -0.7f)
+                {
+                    print("Scribbler Annotation");
+                    annotationManager.HandleScribblerAnnotation();
+                }
+                else
+                {
+                    annotationManager.IsAnnotationActive = false;
+                }
+            }
+        }  
+    }
+
+    void CloseAllMenus()
+    {
+        GameObject o = GameObject.Find("DatasetSelect");
+        if (o != null) Destroy(o);
+        o = GameObject.Find("ColorSelect");
+        if (o != null) Destroy(o);
+        o = GameObject.Find("AnnotationSelect");
+        if (o != null) Destroy(o);
+
+        return;
+    }
+
+	// Update is called once per frame
+	void Update () {
+        if (_rightObj.index == SteamVR_TrackedObject.EIndex.None || _leftObj.index == SteamVR_TrackedObject.EIndex.None) return;
+        _rightController = SteamVR_Controller.Input((int)_rightObj.index);
+        _leftController = SteamVR_Controller.Input((int)_leftObj.index);
+
+        annotationManager.SetRightHandController(_rightController);
+
+        InputOpenMenus();
+
+        if (_menu == MenuOpened.DatasetSelect)
+        {
+            SelectDataset();
+        }
+        else if (_menu == MenuOpened.ColorSelect)
+        {
+            SelectColor();
+        }
+        else if (_menu == MenuOpened.AnnotationSelect)
+        {
+            SelectAnnotationType();
+        }
+        //if no menu is opened, annotation input, and playback control
+        else if (_menu == MenuOpened.None)
+        {
+
+            if (_leftController.GetPressUp(SteamVR_Controller.ButtonMask.Touchpad))
+            {
+                //Vector2 touchpad = _leftController.GetAxis(EVRButtonId.k_EButton_Axis0);
+                Vector2 touchpad = _leftController.GetAxis(EVRButtonId.k_EButton_SteamVR_Touchpad);
+
+                if (touchpad.y > 0.7f)
+                {
+                    print("Pressed Stop");
+                    _video.Stop();
+                    _playing = false;
+                }
+
+                else if (touchpad.y < -0.7f)
+                {
+                    print("Pressed Play");
+                    _playing = !_playing;
+
+                    if (_playing)
+                        _video.Play();
+                    else
+                        _video.Pause();
+                }
+          
+                else if (touchpad.x > 0.7f)
+                {
+                    print("Pressed Foward");
+                    _video.Skip5Sec();
+                    
+                }
+
+                else if (touchpad.x < -0.7f)
+                {
+                    print("Pressed Backward");
+                    _video.Back5Sec();
+                }
+            }
+
+
+          /*  //Got controllers, now handle input.
+            if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger))
+            {
+                _playing = !_playing;
+             
+                if (_playing)
+                    _video.Play();
+                else
+                    _video.Pause();
+            }
+            */
+
+            if (_rightController.GetPressDown(SteamVR_Controller.ButtonMask.Trigger) && !annotationManager.IsAnnotationActive)
+            {
+                EnableRightPointer();
+            }
+            if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger) && !annotationManager.IsAnnotationActive)
+            {
+                Ray raycast = new Ray(_rightHand.transform.position, _rightHand.transform.forward);
+                RaycastHit hit;
+                bool bHit = Physics.Raycast(raycast, out hit);
+                if (bHit && hit.collider.gameObject.name.Equals("VRPlane"))
+                {
+                    Debug.Log("colide with = " + hit.collider.gameObject.name);
+                    GameObject camera = GameObject.Find("[CameraRig]");
+                    camera.transform.position = new Vector3(hit.point.x, camera.transform.position.y, hit.point.z);
+                }
+                DisableRightPointer();
+            }
+        }
+	}
+
+
+}
