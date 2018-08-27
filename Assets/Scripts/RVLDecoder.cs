@@ -140,7 +140,7 @@ public class RVLDecoder
                 output[k++] = (byte)current;
                 output[k++] = (byte)(current >> 8);
                 output[k++] = (byte)(current >> 0x10);
-                output[k++] = (byte)(current >> 0x18); ;
+                output[k++] = (byte)(current >> 0x18); 
                 previous = current;
             }
         }

@@ -20,7 +20,12 @@ public class CloudVideoPlayer{
     private int _vidWidth;
     private int _vidHeight;
     private int _layerNum;
-   
+
+    //things to play the skeleton 
+    private string _skeletonFileName;
+    private GameObject _skeletonPlayerGO;
+    private FileListener _skeletonPlayer;
+
     public CloudVideoPlayer(string path)
     {
         configFile = path;
@@ -73,6 +78,14 @@ public class CloudVideoPlayer{
             _clouds.Add(s, cloud);            
             
         }
+
+        _skeletonFileName = config["skeletonFIleName"];
+        _skeletonPlayerGO = new GameObject("SkeletonPlayer");
+        _skeletonPlayerGO.transform.position = Vector3.zero;
+        _skeletonPlayerGO.transform.rotation = Quaternion.identity;
+        _skeletonPlayerGO.transform.localScale = Vector3.one;
+        _skeletonPlayer = _skeletonPlayerGO.AddComponent<FileListener>();
+        _skeletonPlayer.Initialize(_skeletonFileName);
     }
 
     public float getDuration()
@@ -90,6 +103,7 @@ public class CloudVideoPlayer{
         {
             d.Skip5Sec();
         }
+        _skeletonPlayer.Skip5Sec();
     }
 
     public void Back5Sec()
@@ -98,8 +112,10 @@ public class CloudVideoPlayer{
         {
             d.Back5Sec();
         }
+        _skeletonPlayer.Back5Sec();
+
     }
-    
+
     public void Play()
     {
         foreach (PointCloudDepth d in _clouds.Values)
@@ -122,6 +138,8 @@ public class CloudVideoPlayer{
         {
             d.StopCloudVideo();
         }
+        _skeletonPlayer.Reset();
+
     }
     public void Close()
     {
@@ -130,6 +148,7 @@ public class CloudVideoPlayer{
             pcd.destroy();
             GameObject.Destroy(pcd.gameObject);
         }
+        _skeletonPlayer.Close();
     }
 
     public void setSpeed(float speed)

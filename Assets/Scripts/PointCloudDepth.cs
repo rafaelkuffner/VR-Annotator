@@ -194,7 +194,7 @@ public class PointCloudDepth : MonoBehaviour
     {
         _id = id;
         _depthTex = new Texture2D(_width, _height, TextureFormat.BGRA32, false);
-        _depthTex.filterMode = FilterMode.Point;
+        _depthTex.filterMode =  FilterMode.Point;
         _depthBytes = new byte[_width * _height * 4];
         _cloudGameobj = cloudGameobj;
 
