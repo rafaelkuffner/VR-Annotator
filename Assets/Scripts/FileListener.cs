@@ -1,8 +1,5 @@
 ﻿using UnityEngine;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.IO;
 
 public class FileListener : MonoBehaviour {
@@ -10,57 +7,68 @@ public class FileListener : MonoBehaviour {
 	public static string NoneMessage = "0";
 
 	private string _fileLocation;
-	StreamReader file;
-	private List<string> _stringsToParse;
-
-	void Start()
+	StreamLineReader file = null;
+    private List<string> _stringsToParse;
+	void Awake()
 	{
-        file = null;
 		_stringsToParse = new List<string>();
         gameObject.AddComponent<TrackerClientRecorded>();
 	}
 
    public void Initialize(string f)
     {
-        if (file != null) file.Close();
+        if (file != null) file.Dispose();
         _fileLocation = f;
-        file= new StreamReader(_fileLocation);
+
+        if (f == "")
+        {
+            file = null;
+            return;
+        }
+        file= new StreamLineReader(File.OpenRead(_fileLocation));
+        Debug.Log("Skeleton initialized, file = " +file);
     }
 
     public void Skip5Sec()
     {
-        //implement
+        file.GoToLine(file.CurrentLine + 5);
     }
 
     public void Back5Sec()
     {
-        //implement
+        file.GoToLine(file.CurrentLine - 5);
     }
 
     public void Reset()
     {
-        //implement
+        file.GoToLine(0);
     }
 
     public void Close()
     {
-        file.Close();
+        file.Dispose();
+        file = null;
+    }
+
+    public bool HasSkeleton()
+    {
+        return file != null;
     }
 
     //chamar em um dos eventos. Ter um frame num, se for diferente muda, senão faz nada.
-    public void ReadNextLine()
+    public void ReadNextLine(int framen)
     {
-       
+        if (framen <= file.CurrentLine) return;
+
         string stringToParse = file.ReadLine();
-        if (stringToParse == null)
+        if (stringToParse == null || stringToParse == "")
         {
-            file.BaseStream.Position = 0;
-            file.DiscardBufferedData();
-            stringToParse = file.ReadLine();
+            file.GoToLine(0);
+            return;
         }
 
         List<Body> bodies = new List<Body>();
-        if (stringToParse.Length != 1)
+        if (stringToParse.Length > 1)
         {
             List<string> bstrings = new List<string>(stringToParse.Split(MessageSeparators.L1));
             bstrings.RemoveAt(0); // first statement is not a body
@@ -75,7 +83,7 @@ public class FileListener : MonoBehaviour {
 
 	void OnApplicationQuit()
 	{
-		file.Close ();
+		file.Dispose();
 	}
 
 	void OnQuit()

@@ -71,19 +71,15 @@ public class TrackerClientRecorded : MonoBehaviour
 
 		foreach (Body b in bodies) 
 		{
-			try
-			{  
+			
 				string bodyID = b.Properties[BodyPropertiesType.UID];
 				if (!Humans.ContainsKey(bodyID)) 
 				{
 					Humans.Add(bodyID, new Human(true));
 				}
 				Humans[bodyID].Update(b);
-			} 
-			catch (Exception e) 
-			{
-				Debug.LogError("[TrackerClient] ERROR: " + e.StackTrace);
-			}
+			
+			
 		}
 	}
 

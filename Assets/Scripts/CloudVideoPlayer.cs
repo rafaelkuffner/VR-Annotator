@@ -29,7 +29,7 @@ public class CloudVideoPlayer{
     public CloudVideoPlayer(string path)
     {
         configFile = path;
-        Debug.Log("VideoObject loading from " + configFile);
+        //Debug.Log("VideoObject loading from " + configFile);
         _clouds = new Dictionary<string, PointCloudDepth>();
         loadConfig();
     }
@@ -39,7 +39,6 @@ public class CloudVideoPlayer{
     private void loadConfig()
     { 
          Dictionary<string, string> config = ConfigProperties.load(configFile);
-
         _videosDir = config["videosDir"];
         _colorStreamName = config["colorStreamName"];
         _depthStreamName = config["depthStreamName"];
@@ -47,6 +46,25 @@ public class CloudVideoPlayer{
         _vidWidth =int.Parse(config["vidWidth"]);
         _vidHeight =int.Parse(config["vidHeight"]);
         _layerNum =int.Parse(config["numLayers"]);
+
+       
+        if (_skeletonPlayerGO == null)
+        {
+            _skeletonPlayerGO = new GameObject("SkeletonPlayer");
+            _skeletonPlayerGO.transform.position = Vector3.zero;
+            _skeletonPlayerGO.transform.rotation = Quaternion.identity;
+            _skeletonPlayerGO.transform.localScale = Vector3.one;
+            _skeletonPlayer = _skeletonPlayerGO.AddComponent<FileListener>();
+        }
+        _skeletonFileName = "";
+        if (config.ContainsKey("skeletonFileName"))
+        {
+            _skeletonFileName = config["skeletonFileName"];
+        }
+        _skeletonPlayer.Initialize(_skeletonFileName);
+        Debug.Log("has skele" + _skeletonPlayer.HasSkeleton());
+
+        GameObject papi = GameObject.Find("Data");
         for (int i = 0; i < _layerNum; i++)
         {
             string s = "";
@@ -59,10 +77,12 @@ public class CloudVideoPlayer{
                 new Vector4(float.Parse(chunks[3]), float.Parse(chunks[7]), float.Parse(chunks[11]), float.Parse(chunks[15])));
 
             GameObject cloudobj = new GameObject(s);
+            cloudobj.transform.SetParent(papi.transform);
             cloudobj.transform.localPosition = new Vector3(mat[0, 3], mat[1, 3],mat[2,3]);
             cloudobj.transform.localRotation = mat.rotation;
             cloudobj.transform.localScale = new Vector3(-1, 1, 1);
             cloudobj.AddComponent<PointCloudDepth>();
+
             PointCloudDepth cloud = cloudobj.GetComponent<PointCloudDepth>();
 
             //play from url
@@ -73,19 +93,11 @@ public class CloudVideoPlayer{
             string depthvideo = _videosDir + "\\" + s + _depthStreamName;
             //string normalvideo = _videosDir + "\\" + s + _normalStreamName;
 
-            cloud.initStructs((uint)i,colorvideo, depthvideo,cloudobj);
+            cloud.initStructs((uint)i,colorvideo, depthvideo,cloudobj,_skeletonPlayer);
 
-            _clouds.Add(s, cloud);            
-            
+            _clouds.Add(s, cloud);               
         }
-
-        _skeletonFileName = config["skeletonFIleName"];
-        _skeletonPlayerGO = new GameObject("SkeletonPlayer");
-        _skeletonPlayerGO.transform.position = Vector3.zero;
-        _skeletonPlayerGO.transform.rotation = Quaternion.identity;
-        _skeletonPlayerGO.transform.localScale = Vector3.one;
-        _skeletonPlayer = _skeletonPlayerGO.AddComponent<FileListener>();
-        _skeletonPlayer.Initialize(_skeletonFileName);
+        Debug.Log("has skele" +_skeletonPlayer.HasSkeleton());
     }
 
     public float getDuration()

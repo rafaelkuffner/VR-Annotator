@@ -21,6 +21,7 @@ public class PointCloudDepth : MonoBehaviour
     private double _seekTime;
     private long _seekFrame;
 
+    private FileListener _skeletonPlayer;
     // Decompressor _colorDecoder;
     byte[] _depthBytes;
    
@@ -40,6 +41,7 @@ public class PointCloudDepth : MonoBehaviour
     {
         if (!_player.isPrepared && !_decoder.prepared)
         {
+        
             print("Video not yet prepared");
             return;
         }
@@ -173,7 +175,11 @@ public class PointCloudDepth : MonoBehaviour
     {
         if (!_playing || _videoSeekActive) return;
 
-       
+        if (_skeletonPlayer.HasSkeleton()) {
+            int frame = (int)(_player.time * 30);
+            _skeletonPlayer.ReadNextLine(frame);
+        }
+
         _depthStreamDone = !_decoder.DecompressRVL(_depthBytes, _width * _height);
         if (!_depthStreamDone) _depthTex.LoadRawTextureData(_depthBytes);
         else return;
@@ -190,7 +196,7 @@ public class PointCloudDepth : MonoBehaviour
         show();
     }
 
-    public void initStructs(uint id, string colorVideo, string depthVideo,GameObject cloudGameobj)
+    public void initStructs(uint id, string colorVideo, string depthVideo,GameObject cloudGameobj,FileListener skeletonPlayer)
     {
         _id = id;
         _depthTex = new Texture2D(_width, _height, TextureFormat.BGRA32, false);
@@ -281,6 +287,8 @@ public class PointCloudDepth : MonoBehaviour
         points = new List<Vector3>();
         ind = new List<int>();
 
+
+        _skeletonPlayer = skeletonPlayer;
 
     }
 
