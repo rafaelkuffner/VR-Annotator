@@ -22,23 +22,15 @@ public class InputManager : MonoBehaviour {
     private GameObject _rightHolder;
     private GameObject _rightPointer;
     private float _pointerThickness = 0.002f;
-    private Color _pointerColor;
-
-    public Color PointerColor
-    {
-        get { return _pointerColor; }
-        set { _pointerColor = value; }
-    }
+    public Color _pointerColor;
 
     private GameObject _leftHolder;
     private GameObject _leftPointer;
 
     private bool _playing;
 
+    AnnotationManager annotationManager;
     private GameObject _slider;
- 	private GameObject _controlDataset;
-    private GameObject _menuGO;
-    private AnnotationManager _annotationManager;
 
     public enum MenuOpened
     {
@@ -99,8 +91,8 @@ public class InputManager : MonoBehaviour {
         setupLeftPointer();
 
         GameObject annotationManagerGO = GameObject.Find("AnnotationManager");
-        _annotationManager = annotationManagerGO.GetComponent<AnnotationManager>();
-        _annotationManager.SetRightHand(_rightHand);
+        annotationManager = annotationManagerGO.GetComponent<AnnotationManager>();
+        annotationManager.SetRightHand(_rightHand);
 
         DisableRightPointer();
         DisableLeftPointer();
@@ -108,8 +100,6 @@ public class InputManager : MonoBehaviour {
         _video = null;
         _playSpeed = 1;
         _slider = GameObject.Find("Timeline");
-        _controlDataset = Instantiate(Resources.Load("Prefabs/ControlDataset")) as GameObject;
-        _controlDataset.SetActive(false);
 
 	}
 
@@ -136,19 +126,17 @@ public class InputManager : MonoBehaviour {
 
         if (_leftController.GetPressUp(SteamVR_Controller.ButtonMask.ApplicationMenu))
         {
-            //GameObject menu;
+            GameObject menu;
             CloseAllMenus();
 
             if (_menu != MenuOpened.DatasetSelect)
             {
-                _menuGO = Instantiate(Resources.Load("Prefabs/CloudMenu")) as GameObject;
-                _menuGO.name = "DatasetSelect";
-                _menuGO.transform.position = _head.transform.position + (_head.transform.forward * 2);
+                menu = Instantiate(Resources.Load("Prefabs/CloudMenu")) as GameObject;
+                menu.name = "DatasetSelect";
+                menu.transform.position = _head.transform.position + (_head.transform.forward * 2);
                 Vector3 rot = Camera.main.transform.forward;
                 rot.y = 0.0f;
-                _menuGO.transform.rotation = Quaternion.LookRotation(rot);
-                _menuGO.transform.position = new Vector3(_menuGO.transform.position.x, 1.4f, _menuGO.transform.position.z);
-
+                menu.transform.rotation = Quaternion.LookRotation(rot);
                 _menu = MenuOpened.DatasetSelect;
                 EnableLeftPointer();
             }
@@ -161,19 +149,17 @@ public class InputManager : MonoBehaviour {
 
         if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.ApplicationMenu))
         {
-            //GameObject menu;
+            GameObject menu;
             CloseAllMenus();
 
             if (_menu != MenuOpened.ColorSelect)
             {
-                _menuGO = Instantiate(Resources.Load("Prefabs/ColorMenu")) as GameObject;
-                _menuGO.name = "ColorSelect";
-                _menuGO.transform.position = _head.transform.position + (_head.transform.forward * 2);
+                menu = Instantiate(Resources.Load("Prefabs/ColorMenu")) as GameObject;
+                menu.name = "ColorSelect";
+                menu.transform.position = _head.transform.position + (_head.transform.forward * 2);
                 Vector3 rot = Camera.main.transform.forward;
                 rot.y = 0.0f;
-                _menuGO.transform.rotation = Quaternion.LookRotation(rot);
-                _menuGO.transform.position = new Vector3(_menuGO.transform.position.x, 1.4f, _menuGO.transform.position.z);
-
+                menu.transform.rotation = Quaternion.LookRotation(rot);
                 _menu = MenuOpened.ColorSelect;
                 EnableRightPointer();
             }
@@ -185,19 +171,17 @@ public class InputManager : MonoBehaviour {
         }
         if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Touchpad))
         {
-            //GameObject menu;
+            GameObject menu;
             CloseAllMenus();
-            //FALTA CANCELAR A ANOTAÇÃO ATIVA NESSE CASO
+
             if (_menu != MenuOpened.AnnotationSelect)
             {
-                _menuGO = Instantiate(Resources.Load("Prefabs/AnnotationMenu")) as GameObject;
-                _menuGO.name = "AnnotationSelect";
-                _menuGO.transform.position = new Vector3(_rightHand.transform.position.x,
-                    _rightHand.transform.position.y + 0.08f, _rightHand.transform.position.z);
-                //Vector3 rot = Camera.main.transform.forward;
-                Vector3 rot = _head.transform.forward;
+                menu = Instantiate(Resources.Load("Prefabs/AnnotationMenu")) as GameObject;
+                menu.name = "AnnotationSelect";
+                menu.transform.position = _head.transform.position + (_head.transform.forward * 2);
+                Vector3 rot = Camera.main.transform.forward;
                 rot.y = 0.0f;
-                _menuGO.transform.rotation = Quaternion.LookRotation(rot);
+                menu.transform.rotation = Quaternion.LookRotation(rot);
                 _menu = MenuOpened.AnnotationSelect;
             }
             else
@@ -240,7 +224,7 @@ public class InputManager : MonoBehaviour {
                      }
                      
                      _video = new CloudVideoPlayer(b.name);
-                     _annotationManager.SetCloudVideo(_video);
+                     annotationManager.SetCloudVideo(_video);
                      CloseAllMenus();
                      DisableLeftPointer();
                      _menu = MenuOpened.None;
@@ -278,7 +262,7 @@ public class InputManager : MonoBehaviour {
 
        if (_rightController.GetPress(SteamVR_Controller.ButtonMask.Touchpad))
         {
-            if (!_annotationManager.IsAnnotationActive)
+            if (!annotationManager.IsAnnotationActive)
             {
                 Vector2 touchpad = _rightController.GetAxis(EVRButtonId.k_EButton_SteamVR_Touchpad);
                 //Debug.Log("Axis x = " + touchpad.x + " | Axis y = " + touchpad.y);
@@ -286,26 +270,26 @@ public class InputManager : MonoBehaviour {
                 if (touchpad.y > 0.7f)
                 {
                     print("HighlightPoints Annotation");
-                    _annotationManager.HandleHighlightPointsAnnotation();
+                    annotationManager.HandleHighlightPointsAnnotation();
                 }
                 else if (touchpad.y < -0.7f)
                 {
                     print("Mark Annotation");
-                    _annotationManager.HandleMarkAnnotation(_head, _rightPointer);
+                    annotationManager.HandleMarkAnnotation(_head, _rightPointer);
                 }
                 else if (touchpad.x > 0.7f)
                 {
-                    print("Speech Annotation");
-                    _annotationManager.HandleSpeechAnnotation();
+                    print("SpeechToText Annotation");
+                    annotationManager.HandleSpeechToTextAnnotation();
                 }
                 else if (touchpad.x < -0.7f)
                 {
                     print("Scribbler Annotation");
-                    _annotationManager.HandleScribblerAnnotation();
+                    annotationManager.HandleScribblerAnnotation();
                 }
                 else
                 {
-                    _annotationManager.IsAnnotationActive = false;
+                    annotationManager.IsAnnotationActive = false;
                 }
             }
         }  
@@ -319,8 +303,7 @@ public class InputManager : MonoBehaviour {
         if (o != null) Destroy(o);
         o = GameObject.Find("AnnotationSelect");
         if (o != null) Destroy(o);
-        DisableLeftPointer();
-        DisableRightPointer();
+
         return;
     }
 
@@ -330,7 +313,7 @@ public class InputManager : MonoBehaviour {
         _rightController = SteamVR_Controller.Input((int)_rightObj.index);
         _leftController = SteamVR_Controller.Input((int)_leftObj.index);
 
-        _annotationManager.SetRightHandController(_rightController);
+        annotationManager.SetRightHandController(_rightController);
 
         InputOpenMenus();
 
@@ -354,28 +337,11 @@ public class InputManager : MonoBehaviour {
         }
         else if (_menu == MenuOpened.AnnotationSelect)
         {
-            _menuGO.transform.position = new Vector3(_rightHand.transform.position.x,
-                     _rightHand.transform.position.y + 0.15f, _rightHand.transform.position.z);
-            Vector3 rot = _head.transform.forward;
-            rot.y = 0.0f;
-            _menuGO.transform.rotation = Quaternion.LookRotation(rot);
             SelectAnnotationType();
         }
         //if no menu is opened, annotation input, and playback control
         else if (_menu == MenuOpened.None)
         {
-            if (!_controlDataset.activeSelf && _video != null)
-            {
-                _controlDataset.SetActive(true);
-            }
-            else
-            {
-                _controlDataset.transform.position = new Vector3(_leftHand.transform.position.x,
-                    _leftHand.transform.position.y + 0.15f, _leftHand.transform.position.z);
-                Vector3 rot = Camera.main.transform.forward;
-                rot.y = 0.0f;
-                _controlDataset.transform.rotation = Quaternion.LookRotation(rot);
-            }
 
             if (_leftController.GetPressUp(SteamVR_Controller.ButtonMask.Touchpad))
             {
@@ -387,7 +353,6 @@ public class InputManager : MonoBehaviour {
                     print("Pressed Stop");
                     _video.Stop();
                     _playing = false;
-                    _controlDataset.SetActive(false);
                 }
 
                 else if (touchpad.y < -0.7f)
@@ -428,11 +393,11 @@ public class InputManager : MonoBehaviour {
             }
             */
 
-            if (_rightController.GetPressDown(SteamVR_Controller.ButtonMask.Trigger) && !_annotationManager.IsAnnotationActive)
+            if (_rightController.GetPressDown(SteamVR_Controller.ButtonMask.Trigger) && !annotationManager.IsAnnotationActive)
             {
                 EnableRightPointer();
             }
-            if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger) && !_annotationManager.IsAnnotationActive)
+            if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger) && !annotationManager.IsAnnotationActive)
             {
                 Ray raycast = new Ray(_rightHand.transform.position, _rightHand.transform.forward);
                 RaycastHit hit;

@@ -84,6 +84,7 @@ Shader "Custom/Depth Billboard"
 						
 						float vertx = float(x);
 						float verty = float(424 -y);
+						//if(verty == 409) verty = 808;
 						pos.x =  pos.z*(vertx- 255.5)/351.001462;
 						pos.y =  pos.z*(verty-  211.5)/351.001462;
 						pos.w = 1;	
@@ -222,7 +223,7 @@ Shader "Custom/Depth Billboard"
 					//t.g=P+((t.g)-P)*(saturation+0.3);
 					//t.b=P+((t.b)-P)*(saturation+0.3); 
 
-					return  t*_Brightness;
+					return input.color;
 
 				}
 

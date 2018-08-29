@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SpeechToTextAnnotation : StaticAnnotation
+public class SpeechAnnotation : StaticAnnotation
 {
     private GameObject audioSourceGO { get; set; }
     private AudioSource audioSource;
@@ -10,7 +10,7 @@ public class SpeechToTextAnnotation : StaticAnnotation
     private AudioClip audioClip;
     private bool triggerPressed;
 
-    public SpeechToTextAnnotation(CloudVideoPlayer video, GameObject rightHand, SteamVR_Controller.Device rightController) :
+    public SpeechAnnotation(CloudVideoPlayer video, GameObject rightHand, SteamVR_Controller.Device rightController) :
         base(video, rightHand, rightController)
     {
         audioSourceGO = MonoBehaviour.Instantiate(Resources.Load("Prefabs/AudioSourcePrefab")) as GameObject;
@@ -38,8 +38,8 @@ public class SpeechToTextAnnotation : StaticAnnotation
 
             if (triggerPressed)
             {
-               // audioSource.clip = Microphone.Start("Microphone", true, 60, 44100);
-               // Debug.Log("Recorded audoclip lenght = " + audioClip.length); 
+                audioSource.clip = Microphone.Start("2- HTC Vive", true, 120, 44100); // lenght????
+                Debug.Log("Recorded audoclip lenght = " + audioSource.clip.length); 
                 Debug.Log("Recording audio...."); 
             }
 

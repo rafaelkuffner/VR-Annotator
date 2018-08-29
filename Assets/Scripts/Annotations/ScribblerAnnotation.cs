@@ -12,7 +12,7 @@ public class ScribblerAnnotation : StaticAnnotation {
 
    
 
-    public ScribblerAnnotation(CloudVideoPlayer video, GameObject rightHand, SteamVR_Controller.Device rightController) :
+    public ScribblerAnnotation(CloudVideoPlayer video, GameObject rightHand, SteamVR_Controller.Device rightController,Color c) :
         base(video, rightHand, rightController)
     {
         _myPoints = new List<Vector3>();
@@ -23,10 +23,10 @@ public class ScribblerAnnotation : StaticAnnotation {
         lineRenderer = lineRendererGO.GetComponent<LineRenderer>();
         lineRenderer.material = new Material(Shader.Find("Particles/Additive"));
        // lineRenderer.material = Resources.Load("Materials/ParticleAfterburner") as Material;
-        Color color = new Color(Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f));
-        lineRenderer.startColor = color;
-        Debug.Log("Start Color = " + color);
-        //lineRenderer.endColor = new Color(color.r / 0.2f, color.g / 0.2f, color.b / 0.2f);
+       // Color color = new Color(Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f), Random.Range(0.0f, 1.0f));
+        lineRenderer.startColor = c;
+        //Debug.Log("Start Color = " + color);
+        lineRenderer.endColor = c;//new Color(c.r / 0.2f, c.g / 0.2f, c.b / 0.2f);
         //Debug.Log("End Color = " + lineRenderer.endColor);
         lineRenderer.positionCount = 0;
         

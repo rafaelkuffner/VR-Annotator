@@ -16,19 +16,24 @@ public class AnnotationManager : MonoBehaviour {
     private bool bMark;
 
     public GameObject speechToTextGO;
-    private Material speechMaterial;
+    private Texture speechToTextTextureActive;
+  //  private Texture speechToTextTextureInactive;
 
     public GameObject scribblerGO;
-    private Material scribblerMaterial;
+    private Texture scribblerTextureActive;
+ //   private Texture scribblerTextureInactive;
 
     public GameObject highlightPointsGO;
-    private Material highlightPointsMaterial;
+    private Texture highlightPointsTextureActive;
+ //   private Texture highlightPointsTextureInactive;
 
     public GameObject markGO;
-    private Material markMaterial;
+    private Texture markTextureActive;
+ //   private Texture markTextureInactive;
 
     public GameObject deleteGO;
-    private Texture deleteTexture;
+    private Texture deleteTextureActive;
+ //   private Texture deleteTextureInactive;
 
     private SteamVR_Controller.Device _rightController;
     private GameObject _rightHand;
@@ -37,9 +42,7 @@ public class AnnotationManager : MonoBehaviour {
     private ScribblerAnnotation scribblerAnnotation;
     private HighlightPointsAnnotation highlightPointsAnnotation;
     private MarkAnnotation markAnnotation;
-    private SpeechAnnotation speechAnnotation;
-
-    private InputManager inputManager;
+    private SpeechToTextAnnotation speechToTextAnnotation;
 
     public List<StaticAnnotation> staticAnnotationList;
 
@@ -71,24 +74,29 @@ public class AnnotationManager : MonoBehaviour {
         bSpeechToText = false;
         bMark = false;
 
-        //Load menu buttons materials
-        speechMaterial = Resources.Load("Materials/speechToTextMat") as Material;
+        //Load menu buttons textures
+        speechToTextTextureActive = Resources.Load("Textures/speechToTextActive") as Texture;
+      //  speechToTextTextureInactive = Resources.Load("Textures/speechToText") as Texture;
 
-        scribblerMaterial = Resources.Load("Materials/scribblerMat") as Material;
+        scribblerTextureActive = Resources.Load("Textures/scribblerActive") as Texture;
+   //     scribblerTextureInactive = Resources.Load("Textures/scribbler") as Texture;
 
-        highlightPointsMaterial = Resources.Load("Materials/highlightPointsMat") as Material;
+        highlightPointsTextureActive = Resources.Load("Textures/highlightPointsActive") as Texture;
+   //     highlightPointsTextureInactive = Resources.Load("Textures/highlightPoints") as Texture;
 
-        markMaterial = Resources.Load("Materials/markMat") as Material;
+        markTextureActive = Resources.Load("Textures/markActive") as Texture;
+     //   markTextureInactive = Resources.Load("Textures/mark") as Texture;
 
-        deleteTexture = Resources.Load("Textures/deleteActive") as Texture;
+        deleteTextureActive = Resources.Load("Textures/deleteActive") as Texture;
+   //     deleteTextureInactive = Resources.Load("Textures/delete") as Texture;
 
         scribblerAnnotation = null;
         highlightPointsAnnotation = null;
         markAnnotation = null;
-        speechAnnotation = null;
+        speechToTextAnnotation = null;
         staticAnnotationList = new List<StaticAnnotation>();
+      //  DisableAnnotations();
 
-        inputManager = GameObject.Find("InputManager").GetComponent<InputManager>();
     }
 
     
@@ -96,12 +104,10 @@ public class AnnotationManager : MonoBehaviour {
     {
         if (!bHighlightPoints)
         {
-            Renderer[] renderers = currentAnimationGO.GetComponentsInChildren<Renderer>();
-            renderers[0].sharedMaterial = highlightPointsMaterial;
-            renderers[1].sharedMaterial = highlightPointsMaterial;
-
-            //currentAnimationGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", highlightPointsTexture);
+            //DisableAnnotations();
+            currentAnimationGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", highlightPointsTextureActive);
             currentAnimationGO.SetActive(true);
+            //highlightPointsGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", highlightPointsTextureActive);
             bHighlightPoints = true;
             highlightPointsAnnotation = new HighlightPointsAnnotation(_video, _rightHand, _rightController);
             highlightPointsAnnotation.IsActive = true;
@@ -111,15 +117,14 @@ public class AnnotationManager : MonoBehaviour {
 
     public void HandleScribblerAnnotation()
     {
-        if (!bScribbler) {
+        if (!bScribbler) { 
 
-            Renderer[] renderers = currentAnimationGO.GetComponentsInChildren<Renderer>();
-            renderers[0].sharedMaterial = scribblerMaterial;
-            renderers[1].sharedMaterial = scribblerMaterial;
-            //currentAnimationGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", scribblerTexture);
+           // DisableAnnotations();
+            currentAnimationGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", scribblerTextureActive);
             currentAnimationGO.SetActive(true);
+            //scribblerGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", scribblerTextureActive);
             bScribbler = true;
-            scribblerAnnotation = new ScribblerAnnotation(_video, _rightHand, _rightController,inputManager.PointerColor);
+            scribblerAnnotation = new ScribblerAnnotation(_video, _rightHand, _rightController);
             scribblerAnnotation.IsActive = true;
             staticAnnotationList.Add(scribblerAnnotation);
             
@@ -128,14 +133,11 @@ public class AnnotationManager : MonoBehaviour {
 
     public void HandleMarkAnnotation(GameObject _head, GameObject _rightPointer)
     {
-        if (!bMark) {
-
-            Renderer[] renderers = currentAnimationGO.GetComponentsInChildren<Renderer>();
-            renderers[0].sharedMaterial =  markMaterial;
-            renderers[1].sharedMaterial = markMaterial;
-            
-            //currentAnimationGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", markTexture);
+        if (!bMark) { 
+           // DisableAnnotations();
+            currentAnimationGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", markTextureActive);
             currentAnimationGO.SetActive(true);
+            //markGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", markTextureActive);
             bMark = true;
             markAnnotation = new MarkAnnotation(_video, _rightHand, _rightController, _head, _rightPointer);
             markAnnotation.IsActive = true;
@@ -143,34 +145,47 @@ public class AnnotationManager : MonoBehaviour {
         }
     }
 
-    public void HandleSpeechAnnotation()
-    {
-        if (!bSpeechToText) {
+   
 
-            Renderer[] renderers = currentAnimationGO.GetComponentsInChildren<Renderer>();
-            renderers[0].sharedMaterial = speechMaterial;
-            renderers[1].sharedMaterial = speechMaterial;
-            
-            //currentAnimationGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", speechTexture);
+    public void HandleSpeechToTextAnnotation()
+    {
+        if (!bSpeechToText) { 
+           // DisableAnnotations();
+            currentAnimationGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", speechToTextTextureActive);
             currentAnimationGO.SetActive(true);
+            //speechToTextGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", speechToTextTextureActive);
             bSpeechToText = true;
-            speechAnnotation = new SpeechAnnotation(_video, _rightHand, _rightController);
-            speechAnnotation.IsActive = true;
-            staticAnnotationList.Add(speechAnnotation);
+            speechToTextAnnotation = new SpeechToTextAnnotation(_video, _rightHand, _rightController);
+            speechToTextAnnotation.IsActive = true;
+            staticAnnotationList.Add(speechToTextAnnotation);
         }
     }
 
+ /*   public void DisableAnnotations()
+    {
+        bHighlightPoints = false;
+        highlightPointsGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", highlightPointsTextureInactive);
+        bScribbler = false;
+        scribblerGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", scribblerTextureInactive);
+        bSpeechToText = false;
+        speechToTextGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", speechToTextTextureInactive);
+        bMark = false;
+        markGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", markTextureInactive);
+    }
+*/
+   
 	// Update is called once per frame
 	void Update () {
 
         if (IsAnnotationActive) {
             Debug.Log("number of static annotation = " + staticAnnotationList.Count);
             currentAnimationGO.transform.position = new Vector3(_rightHand.transform.position.x,
-                    _rightHand.transform.position.y + 0.075f, _rightHand.transform.position.z);
+                    _rightHand.transform.position.y + 0.15f, _rightHand.transform.position.z);
             Vector3 rot = Camera.main.transform.forward;
             rot.y = 0.0f;
+            rot.z = 90.0f;
             currentAnimationGO.transform.rotation = Quaternion.LookRotation(rot);
-      
+
             if (bHighlightPoints)
             {
                 Debug.Log("Start highlightPoint Annotation");
@@ -197,8 +212,8 @@ public class AnnotationManager : MonoBehaviour {
             else if (bSpeechToText)
             {
                 Debug.Log("Start SpeechToText Annotation");
-                speechAnnotation.annotate();
-                if (!speechAnnotation.IsActive)
+                speechToTextAnnotation.annotate();
+                if (!speechToTextAnnotation.IsActive)
                 {
                     currentAnimationGO.SetActive(false);
                     bSpeechToText = false;
