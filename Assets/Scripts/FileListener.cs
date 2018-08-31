@@ -31,23 +31,29 @@ public class FileListener : MonoBehaviour {
 
     public void Skip5Sec()
     {
-        file.GoToLine(file.CurrentLine + 5);
+        if (file != null)
+            file.GoToLine(file.CurrentLine + 5);
     }
 
     public void Back5Sec()
     {
-        file.GoToLine(file.CurrentLine - 5);
+        if(file != null)
+            file.GoToLine(file.CurrentLine - 5);
     }
 
     public void Reset()
     {
+        if(file !=null)
         file.GoToLine(0);
     }
 
     public void Close()
     {
-        file.Dispose();
-        file = null;
+
+        if (file != null) { 
+            file.Dispose();
+            file = null;
+        }
     }
 
     public bool HasSkeleton()
