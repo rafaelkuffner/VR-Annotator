@@ -56,11 +56,11 @@ public class SpeechAnnotation : StaticAnnotation
 
     public override void play()
     {
-        throw new System.NotImplementedException();
+        audioSource.Play();
     }
 
     public override void stop()
     {
-        throw new System.NotImplementedException();
+        audioSource.Stop();
     }
 }
