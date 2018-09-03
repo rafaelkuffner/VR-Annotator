@@ -45,7 +45,7 @@ public class ScribblerAnnotation : StaticAnnotation {
             if (_rightController.GetPressDown(SteamVR_Controller.ButtonMask.Trigger))
             { 
                 triggerPressed = true;
-                _start = Time.time;
+               // _start = Time.time;
                 Debug.Log("start = " + _start);
             }
             
@@ -67,10 +67,20 @@ public class ScribblerAnnotation : StaticAnnotation {
             {
                 triggerPressed = false;
                 IsActive = false;
-                _duration = Time.time - _start;
+                //_duration = Time.deltaTime - _start;
                 Debug.Log("duration = " + _duration);
             }
         } 
+    }
+
+    public override void play()
+    {
+        lineRendererGO.SetActive(true);
+    }
+
+    public override void stop()
+    {
+        lineRendererGO.SetActive(false);
     }
 
 }

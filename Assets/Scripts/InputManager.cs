@@ -40,6 +40,8 @@ public class InputManager : MonoBehaviour {
     private GameObject _menuGO;
     private AnnotationManager _annotationManager;
 
+    private Dictionary<CloudVideoPlayer, AnnotationManager> annotationManagerByVideo;
+
     public enum MenuOpened
     {
         DatasetSelect,ColorSelect,AnnotationSelect,None
@@ -93,14 +95,17 @@ public class InputManager : MonoBehaviour {
 	// Use this for initialization
 
 	void Start () {
+
         _rightObj = _rightHand.GetComponent<SteamVR_TrackedObject>();
         _leftObj = _leftHand.GetComponent<SteamVR_TrackedObject>();
         setupRightPointer();
         setupLeftPointer();
 
-        GameObject annotationManagerGO = GameObject.Find("AnnotationManager");
-        _annotationManager = annotationManagerGO.GetComponent<AnnotationManager>();
-        _annotationManager.SetRightHand(_rightHand);
+        _annotationManager = null;
+
+        //GameObject annotationManagerGO = GameObject.Find("AnnotationManager");
+        //_annotationManager = annotationManagerGO.GetComponent<AnnotationManager>();
+        //_annotationManager.SetRightHand(_rightHand);
 
         DisableRightPointer();
         DisableLeftPointer();
@@ -110,6 +115,8 @@ public class InputManager : MonoBehaviour {
         _slider = GameObject.Find("Timeline");
         _controlDataset = Instantiate(Resources.Load("Prefabs/ControlDataset")) as GameObject;
         _controlDataset.SetActive(false);
+
+        annotationManagerByVideo = new Dictionary<CloudVideoPlayer, AnnotationManager>();
 
 	}
 
@@ -240,7 +247,13 @@ public class InputManager : MonoBehaviour {
                      }
                      
                      _video = new CloudVideoPlayer(b.name);
-                     _annotationManager.SetCloudVideo(_video);
+
+                     if (!annotationManagerByVideo.ContainsKey(_video)) {
+                         _annotationManager = new AnnotationManager();
+                         _annotationManager.init();
+                         _annotationManager.SetCloudVideo(_video);
+                         annotationManagerByVideo.Add(_video, _annotationManager);
+                     }
                      CloseAllMenus();
                      DisableLeftPointer();
                      _menu = MenuOpened.None;
@@ -275,7 +288,7 @@ public class InputManager : MonoBehaviour {
 
     void SelectAnnotationType()
     {
-
+     
        if (_rightController.GetPress(SteamVR_Controller.ButtonMask.Touchpad))
         {
             if (!_annotationManager.IsAnnotationActive)
@@ -326,11 +339,16 @@ public class InputManager : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
+
         if (_rightObj.index == SteamVR_TrackedObject.EIndex.None || _leftObj.index == SteamVR_TrackedObject.EIndex.None) return;
         _rightController = SteamVR_Controller.Input((int)_rightObj.index);
         _leftController = SteamVR_Controller.Input((int)_leftObj.index);
 
-        _annotationManager.SetRightHandController(_rightController);
+        if (_annotationManager != null) { 
+            _annotationManager.SetRightHand(_rightHand);
+            _annotationManager.SetRightHandController(_rightController);
+            _annotationManager.Update();
+        }
 
         InputOpenMenus();
 
@@ -388,6 +406,8 @@ public class InputManager : MonoBehaviour {
                     _video.Stop();
                     _playing = false;
                     _controlDataset.SetActive(false);
+                    _annotationManager.DisableAnnotations();
+                    _annotationManager.currentTime = 0.0f;
                 }
 
                 else if (touchpad.y < -0.7f)

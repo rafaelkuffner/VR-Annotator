@@ -2,8 +2,9 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System;
 
-public class AnnotationManager : MonoBehaviour {
+public class AnnotationManager {
 
 
     public bool IsAnnotationActive { get; set; }
@@ -41,6 +42,8 @@ public class AnnotationManager : MonoBehaviour {
 
     private InputManager inputManager;
 
+    public float currentTime { get; set; }
+
     public List<StaticAnnotation> staticAnnotationList;
 
     public void SetRightHand(GameObject rightHand)
@@ -59,11 +62,11 @@ public class AnnotationManager : MonoBehaviour {
     }
 
     // Use this for initialization
-	void Start () {
+	public void init () {
 
         IsAnnotationActive = false;
 
-        currentAnimationGO = Instantiate(Resources.Load("Prefabs/CurrentAnnotation")) as GameObject;
+        currentAnimationGO = GameObject.Instantiate(Resources.Load("Prefabs/CurrentAnnotation")) as GameObject;
         currentAnimationGO.SetActive(false);
 
         bHighlightPoints = false;
@@ -87,6 +90,8 @@ public class AnnotationManager : MonoBehaviour {
         markAnnotation = null;
         speechAnnotation = null;
         staticAnnotationList = new List<StaticAnnotation>();
+
+        currentTime = 0.0f;
 
         inputManager = GameObject.Find("InputManager").GetComponent<InputManager>();
     }
@@ -160,8 +165,22 @@ public class AnnotationManager : MonoBehaviour {
         }
     }
 
+    public void DisableAnnotations()
+    {
+        foreach (StaticAnnotation staticAnnotation in staticAnnotationList)
+            staticAnnotation.stop();
+    }
+
+    static bool RoughlyEqual(float a, float b)
+    {
+        float treshold = 2f; //how much roughly
+        return (Math.Abs(a - b) < treshold);
+    }
+
 	// Update is called once per frame
-	void Update () {
+	public void Update () {
+
+        currentTime += Time.deltaTime;
 
         if (IsAnnotationActive) {
             Debug.Log("number of static annotation = " + staticAnnotationList.Count);
@@ -174,6 +193,7 @@ public class AnnotationManager : MonoBehaviour {
             if (bHighlightPoints)
             {
                 Debug.Log("Start highlightPoint Annotation");
+                highlightPointsAnnotation.setStart(currentTime);
                 highlightPointsAnnotation.annotate();
 
                 if (!highlightPointsAnnotation.IsActive)
@@ -186,6 +206,7 @@ public class AnnotationManager : MonoBehaviour {
             else if(bScribbler) 
             {
                 Debug.Log("Start Scribbler Annotation");
+                scribblerAnnotation.setStart(currentTime);
                 scribblerAnnotation.annotate();
                 
                 if (!scribblerAnnotation.IsActive)
@@ -197,6 +218,7 @@ public class AnnotationManager : MonoBehaviour {
             else if (bSpeechToText)
             {
                 Debug.Log("Start SpeechToText Annotation");
+                speechAnnotation.setStart(currentTime);
                 speechAnnotation.annotate();
                 if (!speechAnnotation.IsActive)
                 {
@@ -208,6 +230,7 @@ public class AnnotationManager : MonoBehaviour {
             else if (bMark)
             {
                 Debug.Log("Start Mark Annotation");
+                markAnnotation.setStart(currentTime);
                 markAnnotation.annotate();
 
                 if (!markAnnotation.IsActive)
@@ -219,5 +242,17 @@ public class AnnotationManager : MonoBehaviour {
         }
         IsAnnotationActive = bHighlightPoints || bScribbler || bSpeechToText || bMark;
 
+       if (!IsAnnotationActive) { 
+            foreach (StaticAnnotation staticAnnotation in staticAnnotationList)
+            {
+                if (RoughlyEqual(staticAnnotation.getStart(), currentTime))
+                    staticAnnotation.play();
+
+                if (staticAnnotation.getStart() > currentTime) //TODO:  + staticAnnotation.getDuration()
+                {
+                    staticAnnotation.stop();
+                }
+            }
+        } 
 	}
 }

@@ -53,4 +53,14 @@ public class SpeechAnnotation : StaticAnnotation
             }
         }
     }
+
+    public override void play()
+    {
+        throw new System.NotImplementedException();
+    }
+
+    public override void stop()
+    {
+        throw new System.NotImplementedException();
+    }
 }

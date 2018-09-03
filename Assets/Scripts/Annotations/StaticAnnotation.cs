@@ -28,7 +28,29 @@ public abstract class StaticAnnotation {
         _duration = 0.0f;
     }
 
+    public void setStart(float start)
+    {
+        _start = start;
+    }
+
+    public float getStart()
+    {
+        return _start;
+    }
+
+    public void setDuration(float duration)
+    {
+        _duration = duration;
+    }
+
+    public float getDuration()
+    {
+        return _duration;
+    }
+
     public abstract void annotate();
 
+    public abstract void play();
 
+    public abstract void stop();
 }
