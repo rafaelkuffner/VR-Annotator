@@ -194,9 +194,10 @@ public class InputManager : MonoBehaviour {
         {
             //GameObject menu;
             CloseAllMenus();
-            //FALTA CANCELAR A ANOTAÇÃO ATIVA NESSE CASO
+           
             if (_menu != MenuOpened.AnnotationSelect)
             {
+                _annotationManager.Reset(); // cancel any active annotation
                 _menuGO = Instantiate(Resources.Load("Prefabs/AnnotationMenu")) as GameObject;
                 _menuGO.name = "AnnotationSelect";
                 _menuGO.transform.position = new Vector3(_rightHand.transform.position.x,
@@ -316,10 +317,11 @@ public class InputManager : MonoBehaviour {
                     print("Scribbler Annotation");
                     _annotationManager.HandleScribblerAnnotation();
                 }
-                else
+                /*else
                 {
                     _annotationManager.IsAnnotationActive = false;
-                }
+                    _annotationManager.DisableAnnotations();
+                } */
             }
         }  
     }

@@ -171,6 +171,16 @@ public class AnnotationManager {
             staticAnnotation.stop();
     }
 
+    public void Reset()
+    {
+        currentAnimationGO.SetActive(false);
+        bHighlightPoints = false;
+        bScribbler = false;
+        bSpeechToText = false;
+        bMark = false;
+    }
+
+
     static bool RoughlyEqual(float a, float b)
     {
         float treshold = 2f; //how much roughly
