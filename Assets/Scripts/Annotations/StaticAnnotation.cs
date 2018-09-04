@@ -8,7 +8,7 @@ public abstract class StaticAnnotation {
     protected float _start;
     protected float _duration;
     protected Type _annotationType;
-
+ 
     protected SteamVR_Controller.Device _rightController;
     protected GameObject _rightHand;
     protected CloudVideoPlayer _video;
@@ -25,7 +25,8 @@ public abstract class StaticAnnotation {
         _rightController = rightController;
 
         _start = 0.0f;
-        _duration = 0.0f;
+        _duration = 2.0f;
+
     }
 
     public void setStart(float start)
@@ -47,7 +48,7 @@ public abstract class StaticAnnotation {
     {
         return _duration;
     }
-
+    
     public abstract void annotate();
 
     public abstract void play();

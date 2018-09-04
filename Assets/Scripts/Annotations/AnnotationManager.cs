@@ -8,6 +8,7 @@ public class AnnotationManager {
 
 
     public bool IsAnnotationActive { get; set; }
+    public bool IsPlayingVideo { get; set; }
 
     private GameObject currentAnimationGO;
 
@@ -73,6 +74,7 @@ public class AnnotationManager {
         bScribbler = false;
         bSpeechToText = false;
         bMark = false;
+        IsPlayingVideo = false;
 
         //Load menu buttons materials
         speechMaterial = Resources.Load("Materials/speechToTextMat") as Material;
@@ -167,8 +169,9 @@ public class AnnotationManager {
 
     public void DisableAnnotations()
     {
-        foreach (StaticAnnotation staticAnnotation in staticAnnotationList)
+        foreach (StaticAnnotation staticAnnotation in staticAnnotationList) {
             staticAnnotation.stop();
+        }
     }
 
     public void Reset()
@@ -183,7 +186,7 @@ public class AnnotationManager {
 
     static bool RoughlyEqual(float a, float b)
     {
-        float treshold = 2f; //how much roughly
+        float treshold = 1.2f; //how much roughly
         return (Math.Abs(a - b) < treshold);
     }
 
@@ -258,11 +261,21 @@ public class AnnotationManager {
                 if (RoughlyEqual(staticAnnotation.getStart(), currentTime))
                     staticAnnotation.play();
 
-                if (staticAnnotation.getStart() > currentTime) //TODO:  + staticAnnotation.getDuration()
+                if (currentTime > staticAnnotation.getStart() && RoughlyEqual(staticAnnotation.getStart() + staticAnnotation.getDuration(), currentTime)) 
                 {
                     staticAnnotation.stop();
                 }
             }
-        } 
+        }
+
+       if (IsPlayingVideo)
+       {
+           Time.timeScale = 1.0f;
+       }
+       else
+       {
+           Time.timeScale = 0.0f;
+       }
+
 	}
 }

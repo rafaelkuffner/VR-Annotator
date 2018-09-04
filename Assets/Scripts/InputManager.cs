@@ -410,6 +410,7 @@ public class InputManager : MonoBehaviour {
                     _controlDataset.SetActive(false);
                     _annotationManager.DisableAnnotations();
                     _annotationManager.currentTime = 0.0f;
+                    _annotationManager.IsPlayingVideo = false;
                 }
 
                 else if (touchpad.y < -0.7f)
@@ -417,10 +418,14 @@ public class InputManager : MonoBehaviour {
                     print("Pressed Play");
                     _playing = !_playing;
 
-                    if (_playing)
+                    if (_playing) {
                         _video.Play();
-                    else
+                        _annotationManager.IsPlayingVideo = true;
+                    }
+                    else { 
                         _video.Pause();
+                        _annotationManager.IsPlayingVideo = false;
+                    }
                 }
           
                 else if (touchpad.x > 0.7f)
