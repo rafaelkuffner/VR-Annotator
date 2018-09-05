@@ -20,6 +20,7 @@ GameObject:
   m_Component:
   - component: {fileID: 4013892770200984}
   - component: {fileID: 120198770078679292}
+  - component: {fileID: 65459427660055458}
   m_Layer: 0
   m_Name: LineRendererPrefab
   m_TagString: Untagged
@@ -40,6 +41,18 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!65 &65459427660055458
+BoxCollider:
+  m_ObjectHideFlags: 1
+  m_PrefabParentObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1810670580790098}
+  m_Material: {fileID: 0}
+  m_IsTrigger: 0
+  m_Enabled: 1
+  serializedVersion: 2
+  m_Size: {x: 0.1, y: 0.1, z: 1.1}
+  m_Center: {x: 0, y: 0, z: 0}
 --- !u!120 &120198770078679292
 LineRenderer:
   m_ObjectHideFlags: 1

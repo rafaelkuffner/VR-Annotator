@@ -33,7 +33,7 @@ public class InputManager : MonoBehaviour {
     private GameObject _leftHolder;
     private GameObject _leftPointer;
 
-    private bool _playing;
+    public bool _playing { get; set; }
 
     private GameObject _slider;
  	private GameObject _controlDataset;

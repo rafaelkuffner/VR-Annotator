@@ -258,12 +258,15 @@ public class AnnotationManager {
        if (!IsAnnotationActive) { 
             foreach (StaticAnnotation staticAnnotation in staticAnnotationList)
             {
-                if (RoughlyEqual(staticAnnotation.getStart(), currentTime))
+                if (RoughlyEqual(staticAnnotation.getStart(), currentTime)) {
+                    _video.Pause();
                     staticAnnotation.play();
+                }
 
                 if (currentTime > staticAnnotation.getStart() && RoughlyEqual(staticAnnotation.getStart() + staticAnnotation.getDuration(), currentTime)) 
                 {
                     staticAnnotation.stop();
+                    _video.Play();
                 }
             }
         }
