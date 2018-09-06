@@ -247,7 +247,7 @@ public class InputManager : MonoBehaviour {
                         _video.Close();
                      }
                      
-                     _video = new CloudVideoPlayer(b.name);
+                     _video = new CloudVideoPlayer(b.name,this);
 
                      if (!annotationManagerByVideo.ContainsKey(_video)) {
                          _annotationManager = new AnnotationManager();

@@ -25,13 +25,15 @@ public class CloudVideoPlayer{
     private string _skeletonFileName;
     private GameObject _skeletonPlayerGO;
     private FileListener _skeletonPlayer;
+    private InputManager _inputManager;
 
-    public CloudVideoPlayer(string path)
+    public CloudVideoPlayer(string path,InputManager manager)
     {
         configFile = path;
         //Debug.Log("VideoObject loading from " + configFile);
         _clouds = new Dictionary<string, PointCloudDepth>();
         loadConfig();
+        _inputManager = manager;
     }
 
 
@@ -93,7 +95,7 @@ public class CloudVideoPlayer{
             string depthvideo = _videosDir + "\\" + s + _depthStreamName;
             //string normalvideo = _videosDir + "\\" + s + _normalStreamName;
 
-            cloud.initStructs((uint)i,colorvideo, depthvideo,cloudobj,_skeletonPlayer);
+            cloud.initStructs((uint)i,colorvideo, depthvideo,cloudobj,_skeletonPlayer,this);
 
             _clouds.Add(s, cloud);               
         }
@@ -110,6 +112,7 @@ public class CloudVideoPlayer{
         return _clouds.Values.ElementAt<PointCloudDepth>(0).getTime();
     }
 
+    
     public void Skip5Sec(){
         foreach (PointCloudDepth d in _clouds.Values)
         {
@@ -151,6 +154,8 @@ public class CloudVideoPlayer{
             d.StopCloudVideo();
         }
         _skeletonPlayer.Reset();
+        _inputManager._playing = false;
+        Debug.Log("Stop!");
 
     }
     public void Close()

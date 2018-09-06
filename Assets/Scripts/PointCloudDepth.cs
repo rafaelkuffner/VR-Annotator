@@ -14,6 +14,7 @@ public class PointCloudDepth : MonoBehaviour
     Material _mat;
     RVLDecoder _decoder;
     VideoPlayer _player;
+    CloudVideoPlayer _mainPlayer;
     bool _playing;
 
     private bool _videoSeekActive;
@@ -85,7 +86,7 @@ public class PointCloudDepth : MonoBehaviour
         _seekFrame = (long)(_seekTime * 30);
 
         if (_seekTime > (_player.frameCount / _player.frameRate))
-            StopCloudVideo();
+            _mainPlayer.Stop();
         else
         {
             _player.time = _seekTime;
@@ -182,7 +183,10 @@ public class PointCloudDepth : MonoBehaviour
 
         _depthStreamDone = !_decoder.DecompressRVL(_depthBytes, _width * _height);
         if (!_depthStreamDone) _depthTex.LoadRawTextureData(_depthBytes);
-        else return;
+        else
+        {
+            return;
+        }
 
         
         _depthTex.Apply();
@@ -196,14 +200,14 @@ public class PointCloudDepth : MonoBehaviour
         show();
     }
 
-    public void initStructs(uint id, string colorVideo, string depthVideo,GameObject cloudGameobj,FileListener skeletonPlayer)
+    public void initStructs(uint id, string colorVideo, string depthVideo,GameObject cloudGameobj,FileListener skeletonPlayer,CloudVideoPlayer mainPlayer)
     {
         _id = id;
         _depthTex = new Texture2D(_width, _height, TextureFormat.BGRA32, false);
         _depthTex.filterMode =  FilterMode.Point;
         _depthBytes = new byte[_width * _height * 4];
         _cloudGameobj = cloudGameobj;
-
+        _mainPlayer = mainPlayer;
         //Setup color
        // VideoClip clip = Resources.Load<VideoClip>(colorVideo) as VideoClip;
         VideoPlayer play = cloudGameobj.AddComponent<VideoPlayer>();
@@ -313,10 +317,9 @@ public class PointCloudDepth : MonoBehaviour
     }
     void Update()
     {
-        if (_depthStreamDone)
+        if (_depthStreamDone || _player.frame == (long)_player.frameCount)
         {
-            PauseCloudVideo();
-            _decoder.ResetDecoder();
+            _mainPlayer.Stop();
             _depthStreamDone = false;
             return;
         }
