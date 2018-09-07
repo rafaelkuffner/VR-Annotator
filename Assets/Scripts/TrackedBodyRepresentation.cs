@@ -6,8 +6,8 @@ using MyTechnic;
 public class TrackedBodyRepresentation
 {
 
-    public const float ballSize = 0.1f;
-    public const float boneSize = 0.05f;
+    public const float ballSize = 0.07f;
+    public const float boneSize = 0.025f;
     // Body transforms and joints
 
     public List<Transform> bodyTransforms;
@@ -87,7 +87,9 @@ public class TrackedBodyRepresentation
         rightKneeJoint = new Vector3();
         rightAnkleJoint = new Vector3();
 
-        GameObject avatarGo = new GameObject();
+        GameObject avatarGo = new GameObject("Avatar");
+        SkeletonRepresentation sk = avatarGo.AddComponent<SkeletonRepresentation>();
+        sk.setTBR(this);
         avatarGo.transform.parent = GameObject.Find("Data").transform;
 
         spineBase = createAvatarJoint(avatarGo.transform, "spineBase");
@@ -125,10 +127,27 @@ public class TrackedBodyRepresentation
 
     }
 
+    public void show()
+    {
+        foreach (Transform t in bodyTransforms)
+        {
+            t.GetComponent<Renderer>().enabled = false;
+        }
+    }
+
+    public void hide()
+    {
+        foreach(Transform t in bodyTransforms)
+        {
+            t.GetComponent<Renderer>().enabled = false;
+        }
+    }
 
     Transform createAvatarJoint(Transform parent, string name, float scale = ballSize)
     {
         GameObject gameObject = GameObject.CreatePrimitive(PrimitiveType.Sphere);
+        Material mat = Resources.Load("Materials/SkeletonMaterial") as Material;
+        gameObject.GetComponent<Renderer>().material = mat;
         gameObject.name = name;
         Rigidbody r = gameObject.AddComponent<Rigidbody>();
         r.isKinematic = true;
@@ -143,6 +162,8 @@ public class TrackedBodyRepresentation
     Transform createAvatarBone(Transform parent, float scale = boneSize)
     {
         GameObject gameObject = GameObject.CreatePrimitive(PrimitiveType.Cylinder);
+        Material mat = Resources.Load("Materials/SkeletonMaterial") as Material;
+        gameObject.GetComponent<Renderer>().material = mat;
         Transform transform = gameObject.transform;
         transform.parent = parent;
         bodyTransforms.Add(transform);

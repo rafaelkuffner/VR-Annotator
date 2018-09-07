@@ -222,6 +222,26 @@ public class InputManager : MonoBehaviour {
         _video.setSpeed(speed);
     }
 
+    void SetRepresentation(string representation)
+    {
+        GameObject o = GameObject.Find("Avatar");
+        switch (representation)
+        {
+            case "Full":
+                _video.show();
+                if (o != null) o.GetComponent<SkeletonRepresentation>().show();
+                break;
+            case "Skeleton":
+                _video.hide();
+                if (o != null) o.GetComponent<SkeletonRepresentation>().show();
+                break;
+            case "Cloud":
+                _video.show();
+                if (o != null) o.GetComponent<SkeletonRepresentation>().hide();
+                break;
+        }
+    }
+
     void SelectDataset()
     {
         Ray raycast = new Ray(_leftHand.transform.position, _leftHand.transform.forward);
@@ -239,6 +259,10 @@ public class InputManager : MonoBehaviour {
                          SetPlaybackSpeed(float.Parse(b.GetComponent<VRUIItem>().value));
                          return;
                      }
+                     if(b.name == "Representation")
+                    {
+                        SetRepresentation(b.GetComponent<VRUIItem>().value);
+                    }
                      if (_video != null && _video.configFile == b.name)
                      {
                          return;

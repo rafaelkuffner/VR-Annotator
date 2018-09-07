@@ -112,7 +112,22 @@ public class CloudVideoPlayer{
         return _clouds.Values.ElementAt<PointCloudDepth>(0).getTime();
     }
 
-    
+    public void hide()
+    {
+        foreach (PointCloudDepth d in _clouds.Values)
+        {
+            d.hide();
+        }
+    }
+
+    public void show()
+    {
+        foreach (PointCloudDepth d in _clouds.Values)
+        {
+            d.show();
+        }
+    }
+
     public void Skip5Sec(){
         foreach (PointCloudDepth d in _clouds.Values)
         {

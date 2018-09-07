@@ -28,7 +28,7 @@ public class PopulateCloudMenu : MonoBehaviour {
                 count++;
             }
         }
-        if (count > 30) {
+        if (count > 24) {
             GridLayoutGroup grid = GetComponent<GridLayoutGroup>();
             grid.cellSize = new Vector2(grid.cellSize.x,grid.cellSize.y/2.0f);
         }
