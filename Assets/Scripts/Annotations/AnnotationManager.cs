@@ -6,7 +6,7 @@ using System;
 
 public class AnnotationManager {
 
-
+    private int currentAnnotationID;
     public bool IsAnnotationActive { get; set; }
     public bool IsPlayingVideo { get; set; }
 
@@ -94,6 +94,7 @@ public class AnnotationManager {
         staticAnnotationList = new List<StaticAnnotation>();
 
         currentTime = 0.0f;
+        currentAnnotationID = 0;
 
         inputManager = GameObject.Find("InputManager").GetComponent<InputManager>();
     }
@@ -109,10 +110,12 @@ public class AnnotationManager {
 
             //currentAnimationGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", highlightPointsTexture);
             currentAnimationGO.SetActive(true);
-            bHighlightPoints = true;
             highlightPointsAnnotation = new HighlightPointsAnnotation(_video, _rightHand, _rightController);
             highlightPointsAnnotation.IsActive = true;
+            highlightPointsAnnotation.setID(currentAnnotationID);
             staticAnnotationList.Add(highlightPointsAnnotation);
+            currentAnnotationID++;
+            bHighlightPoints = true;
         }
     }
 
@@ -125,11 +128,12 @@ public class AnnotationManager {
             renderers[1].sharedMaterial = scribblerMaterial;
             //currentAnimationGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", scribblerTexture);
             currentAnimationGO.SetActive(true);
-            bScribbler = true;
             scribblerAnnotation = new ScribblerAnnotation(_video, _rightHand, _rightController,inputManager.PointerColor);
             scribblerAnnotation.IsActive = true;
+            scribblerAnnotation.setID(currentAnnotationID);
             staticAnnotationList.Add(scribblerAnnotation);
-            
+            currentAnnotationID++;
+            bScribbler = true;
         }
     }
 
@@ -143,10 +147,12 @@ public class AnnotationManager {
             
             //currentAnimationGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", markTexture);
             currentAnimationGO.SetActive(true);
-            bMark = true;
             markAnnotation = new MarkAnnotation(_video, _rightHand, _rightController, _head, _rightPointer);
             markAnnotation.IsActive = true;
+            markAnnotation.setID(currentAnnotationID);
             staticAnnotationList.Add(markAnnotation);
+            currentAnnotationID++;
+            bMark = true;
         }
     }
 
@@ -160,10 +166,12 @@ public class AnnotationManager {
             
             //currentAnimationGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", speechTexture);
             currentAnimationGO.SetActive(true);
-            bSpeechToText = true;
             speechAnnotation = new SpeechAnnotation(_video, _rightHand, _rightController);
             speechAnnotation.IsActive = true;
+            speechAnnotation.setID(currentAnnotationID);
             staticAnnotationList.Add(speechAnnotation);
+            currentAnnotationID++;
+            bSpeechToText = true;
         }
     }
 
@@ -184,6 +192,13 @@ public class AnnotationManager {
     }
 
 
+    public void EditAnnotation()
+    {
+        foreach(StaticAnnotation staticAnnotation in staticAnnotationList){
+            staticAnnotation.edit();
+        }
+    }
+
     static bool RoughlyEqual(float a, float b)
     {
         float treshold = 1.2f; //how much roughly
@@ -196,6 +211,7 @@ public class AnnotationManager {
         currentTime += Time.deltaTime;
 
         if (IsAnnotationActive) {
+
             Debug.Log("number of static annotation = " + staticAnnotationList.Count);
             currentAnimationGO.transform.position = new Vector3(_rightHand.transform.position.x,
                     _rightHand.transform.position.y + 0.075f, _rightHand.transform.position.z);

@@ -479,11 +479,13 @@ public class InputManager : MonoBehaviour {
             }
             */
 
-            if (_rightController.GetPressDown(SteamVR_Controller.ButtonMask.Trigger) && !_annotationManager.IsAnnotationActive)
+            if (_rightController.GetPressDown(SteamVR_Controller.ButtonMask.Trigger) && _annotationManager != null && !_annotationManager.IsAnnotationActive)
             {
                 EnableRightPointer();
+                if (_annotationManager != null)
+                    _annotationManager.EditAnnotation();
             }
-            if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger) && !_annotationManager.IsAnnotationActive)
+            if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger) && _annotationManager != null && !_annotationManager.IsAnnotationActive)
             {
                 Ray raycast = new Ray(_rightHand.transform.position, _rightHand.transform.forward);
                 RaycastHit hit;

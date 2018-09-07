@@ -63,4 +63,9 @@ public class SpeechAnnotation : StaticAnnotation
     {
         audioSource.Stop();
     }
+
+    public override void edit()
+    {
+        throw new System.NotImplementedException();
+    }
 }

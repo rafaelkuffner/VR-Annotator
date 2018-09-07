@@ -1,6 +1,8 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using System;
+using System.Text;
 
 public class ScribblerAnnotation : StaticAnnotation {
 
@@ -10,6 +12,7 @@ public class ScribblerAnnotation : StaticAnnotation {
     private List<Vector3> _myPoints;
     private bool triggerPressed;
     private BoxCollider boxCollider;
+    private Vector3 midPoint;
     
     public ScribblerAnnotation(CloudVideoPlayer video, GameObject rightHand, SteamVR_Controller.Device rightController,Color c) :
         base(video, rightHand, rightController)
@@ -17,6 +20,7 @@ public class ScribblerAnnotation : StaticAnnotation {
         _myPoints = new List<Vector3>();
         IsActive = false;
         triggerPressed = false;
+        midPoint = Vector3.zero;
  
         lineRendererGO = MonoBehaviour.Instantiate(Resources.Load("Prefabs/LineRendererPrefab")) as GameObject;
         lineRenderer = lineRendererGO.GetComponent<LineRenderer>();
@@ -105,6 +109,18 @@ public class ScribblerAnnotation : StaticAnnotation {
     public override void stop()
     {
         lineRendererGO.SetActive(false);
+        _annotationIdGO.SetActive(false);
+    }
+
+    public override void edit()
+    {
+        if (lineRendererGO.activeSelf) { 
+            _annotationID.text = Convert.ToString(_id);
+            _annotationIdGO.SetActive(true);
+            Vector3 pos = lineRendererGO.transform.position;
+            _annotationIdGO.transform.position = new Vector3(pos.x, pos.y + 0.3f, pos.z);
+        }
+
     }
 
 }

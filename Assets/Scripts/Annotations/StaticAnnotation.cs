@@ -5,10 +5,13 @@ using UnityEngine.UI;
 
 public abstract class StaticAnnotation {
 
+    protected int _id;
     protected float _start;
     protected float _duration;
     protected Type _annotationType;
- 
+    protected GameObject _annotationIdGO;
+    protected TextMesh _annotationID;
+
     protected SteamVR_Controller.Device _rightController;
     protected GameObject _rightHand;
     protected CloudVideoPlayer _video;
@@ -24,9 +27,26 @@ public abstract class StaticAnnotation {
         _rightHand = rightHand;
         _rightController = rightController;
 
+        _id = 0;
         _start = 0.0f;
-        _duration = 2.0f;
+        _duration = 3.0f;
 
+        _annotationIdGO = GameObject.Instantiate(Resources.Load("Prefabs/AnnotationID")) as GameObject;
+        _annotationIdGO.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+        _annotationID = _annotationIdGO.GetComponent<TextMesh>();
+        _annotationID.text = "0";
+        _annotationIdGO.SetActive(false);
+
+    }
+
+    public void setID(int id)
+    {
+        _id = id;
+    }
+
+    public int getID()
+    {
+        return _id;
     }
 
     public void setStart(float start)
@@ -54,4 +74,6 @@ public abstract class StaticAnnotation {
     public abstract void play();
 
     public abstract void stop();
+
+    public abstract void edit();
 }

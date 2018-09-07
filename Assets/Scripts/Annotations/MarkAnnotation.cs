@@ -80,4 +80,9 @@ public class MarkAnnotation : StaticAnnotation
     {
         throw new System.NotImplementedException();
     }
+
+    public override void edit()
+    {
+        throw new System.NotImplementedException();
+    }
 }
