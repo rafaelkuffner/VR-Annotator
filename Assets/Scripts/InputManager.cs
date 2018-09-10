@@ -21,7 +21,7 @@ public class InputManager : MonoBehaviour {
     //Laser Pointer Variables
     private GameObject _rightHolder;
     private GameObject _rightPointer;
-    private float _pointerThickness = 0.002f;
+    private float _pointerThickness = 0.005f;
     private Color _pointerColor;
 
     public Color PointerColor
@@ -292,7 +292,7 @@ public class InputManager : MonoBehaviour {
         Ray raycast = new Ray(_rightHand.transform.position, _rightHand.transform.forward);
         RaycastHit hit;
         bool bHit = Physics.Raycast(raycast, out hit);
-        if (hit.transform != null && hit.transform.name == "ColorWheel")
+        if (hit.transform != null && hit.transform.name == "ColorPalette")
         {
             Renderer rend = hit.transform.GetComponent<Renderer>();
             Texture2D tex = rend.material.mainTexture as Texture2D;
@@ -300,10 +300,10 @@ public class InputManager : MonoBehaviour {
             pixelUV.x *= tex.width;
             pixelUV.y *= tex.height;
             Color p = tex.GetPixel((int)pixelUV.x, (int)pixelUV.y);
-            _pointerColor = p;
-            _rightPointer.GetComponent<MeshRenderer>().material.SetColor("_Color",p);
             if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger))
             {
+				_rightPointer.GetComponent<MeshRenderer>().material.SetColor("_Color",p);
+				_pointerColor = p;
                 CloseAllMenus();
                 DisableRightPointer();
                 _menu = MenuOpened.None;
