@@ -199,6 +199,34 @@ public class AnnotationManager {
         }
     }
 
+	public void DrawAnnotationsOnTimeline()
+	{
+		GameObject annotationMarks = GameObject.Find ("AnnotationMarks");
+		if (annotationMarks != null)
+			GameObject.Destroy (annotationMarks);
+		GameObject slider = GameObject.Find ("Slider");
+		annotationMarks = new GameObject ("AnnotationMarks");
+		annotationMarks.transform.SetParent (slider.transform);
+		annotationMarks.transform.localPosition = Vector3.zero;
+		annotationMarks.transform.localScale = Vector3.one;
+		annotationMarks.transform.localRotation = Quaternion.identity;
+		foreach (StaticAnnotation sa in staticAnnotationList) 
+		{
+			float start = sa.getStart ();
+			float width = slider.GetComponent<RectTransform> ().rect.width;
+			float ratio = start / _video.getDuration ();
+			float xposition = (ratio * width) - (width / 2);
+			Sprite p =(Sprite) Resources.Load("Textures/Annotation", typeof(Sprite));
+			GameObject r = new GameObject ("Annotation");
+			r.transform.SetParent (annotationMarks.transform);
+			SpriteRenderer rend = r.AddComponent<SpriteRenderer>();
+			rend.sprite = p;
+			r.transform.localRotation = Quaternion.identity;
+			r.transform.localPosition = new Vector3 (xposition, 0, 0);
+			r.transform.localScale = Vector3.one;
+		}
+	}
+
     static bool RoughlyEqual(float a, float b)
     {
         float treshold = 1.2f; //how much roughly
@@ -208,6 +236,7 @@ public class AnnotationManager {
 	// Update is called once per frame
 	public void Update () {
 
+		DrawAnnotationsOnTimeline ();
         currentTime += Time.deltaTime;
 
         if (IsAnnotationActive) {

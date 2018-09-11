@@ -24,6 +24,8 @@ public class InputManager : MonoBehaviour {
     private float _pointerThickness = 0.005f;
     private Color _pointerColor;
 
+	private string _representation;
+
     public Color PointerColor
     {
         get { return _pointerColor; }
@@ -240,6 +242,7 @@ public class InputManager : MonoBehaviour {
                 if (o != null) o.GetComponent<SkeletonRepresentation>().hide();
                 break;
         }
+		_representation = representation;
     }
 
     void SelectDataset()
@@ -262,6 +265,7 @@ public class InputManager : MonoBehaviour {
                      if(b.name == "Representation")
                     {
                         SetRepresentation(b.GetComponent<VRUIItem>().value);
+						return;
                     }
                      if (_video != null && _video.configFile == b.name)
                      {
@@ -435,6 +439,8 @@ public class InputManager : MonoBehaviour {
                     _annotationManager.DisableAnnotations();
                     _annotationManager.currentTime = 0.0f;
                     _annotationManager.IsPlayingVideo = false;
+					GameObject o = GameObject.Find("Avatar");
+					if (o != null) o.GetComponent<SkeletonRepresentation>().hide();
                 }
 
                 else if (touchpad.y < -0.7f)
@@ -444,6 +450,7 @@ public class InputManager : MonoBehaviour {
 
                     if (_playing) {
                         _video.Play();
+						SetRepresentation (_representation);
                         _annotationManager.IsPlayingVideo = true;
                     }
                     else { 

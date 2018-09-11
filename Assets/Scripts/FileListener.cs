@@ -32,19 +32,20 @@ public class FileListener : MonoBehaviour {
     public void Skip5Sec()
     {
         if (file != null)
-            file.GoToLine(file.CurrentLine + 5);
+            file.GoToLine(file.CurrentLine + 150);
     }
 
     public void Back5Sec()
     {
         if(file != null)
-            file.GoToLine(file.CurrentLine - 5);
+            file.GoToLine(file.CurrentLine - 150);
     }
 
     public void Reset()
     {
         if(file !=null)
         file.GoToLine(0);
+	
     }
 
     public void Close()

@@ -116,7 +116,7 @@ public class CloudVideoPlayer{
     {
         foreach (PointCloudDepth d in _clouds.Values)
         {
-            d.hide();
+            d.hideRenderer();
         }
     }
 
@@ -124,7 +124,7 @@ public class CloudVideoPlayer{
     {
         foreach (PointCloudDepth d in _clouds.Values)
         {
-            d.show();
+            d.showRenderer();
         }
     }
 

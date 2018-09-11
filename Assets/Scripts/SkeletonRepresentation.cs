@@ -6,6 +6,7 @@ public class SkeletonRepresentation : MonoBehaviour {
 
     TrackedBodyRepresentation _tbr;
 
+
     public void setTBR(TrackedBodyRepresentation tbr)
     {
         _tbr = tbr;

@@ -16,6 +16,7 @@ public class PointCloudDepth : MonoBehaviour
     VideoPlayer _player;
     CloudVideoPlayer _mainPlayer;
     bool _playing;
+	bool _rendering;
 
     private bool _videoSeekActive;
     private bool _videoSeekWasPlaying;
@@ -36,6 +37,7 @@ public class PointCloudDepth : MonoBehaviour
         _objs = null;
         _mat = Resources.Load("Materials/cloudmatDepth") as Material;
         brightness = 3;
+		_rendering = true;
     }
 
     public void PlayCloudVideo()
@@ -197,7 +199,8 @@ public class PointCloudDepth : MonoBehaviour
             mr.material.SetTexture("_DepthTex", _depthTex);
             mr.material.SetFloat("_Brightness", brightness);
         }
-        show();
+		if(_rendering)
+        	show();
     }
 
     public void initStructs(uint id, string colorVideo, string depthVideo,GameObject cloudGameobj,FileListener skeletonPlayer,CloudVideoPlayer mainPlayer)
@@ -309,6 +312,17 @@ public class PointCloudDepth : MonoBehaviour
             a.SetActive(true);
     }
 
+	public void hideRenderer()
+	{
+		_rendering = false;
+		hide ();
+	}
+
+	public void showRenderer()
+	{
+		_rendering = true;
+		show ();
+	}
     public void destroy()
     {
         _player.frameReady -= this.OnNewFrame;

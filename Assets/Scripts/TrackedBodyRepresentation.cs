@@ -131,7 +131,7 @@ public class TrackedBodyRepresentation
     {
         foreach (Transform t in bodyTransforms)
         {
-            t.GetComponent<Renderer>().enabled = false;
+            t.GetComponent<Renderer>().enabled = true;
         }
     }
 
