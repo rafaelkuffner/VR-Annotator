@@ -353,7 +353,7 @@ public class InputManager : MonoBehaviour {
             }
         }  
     }
-
+    
     void CloseAllMenus()
     {
         GameObject o = GameObject.Find("DatasetSelect");

@@ -180,6 +180,23 @@ public class TrackedBodyRepresentation
         bone.up = joint2 - joint1;
     }
 
+    public Transform findNearestBone(Vector3 position, Vector3 handPosition)
+    {
+        float minDist = float.MaxValue;
+        float maxDist = 1f;
+        Transform minTransf = null;
+        foreach (Transform jointTransform in bodyTransforms)
+        {
+            float dist = (handPosition - jointTransform.position).magnitude;
+            if (dist < minDist && dist < maxDist)
+            {
+                minDist = dist;
+                minTransf = jointTransform;
+            }
+        }
+        return minTransf;
+    }
+
     public void updateAvatarBody()
     {
         Vector3 spineUp = Utils.GetBoneDirection(spineShoulderJoint, spineBaseJoint);

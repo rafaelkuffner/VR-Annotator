@@ -120,6 +120,7 @@ public class ScribblerAnnotation : StaticAnnotation {
             _annotationIdGO.SetActive(true);
             Vector3 pos = lineRendererGO.transform.position;
             _annotationIdGO.transform.position = new Vector3(pos.x, pos.y + 0.3f, pos.z);
+            _editing = true;
         }
 
     }

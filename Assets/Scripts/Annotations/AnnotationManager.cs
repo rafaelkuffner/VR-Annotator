@@ -248,8 +248,7 @@ public class AnnotationManager {
 	// Update is called once per frame
 	public void Update () {
 
-		DrawAnnotationsOnTimeline ();
-        currentTime += Time.deltaTime;
+		currentTime += Time.deltaTime;
 
         if (IsAnnotationActive) {
 
@@ -269,8 +268,10 @@ public class AnnotationManager {
                 if (!highlightPointsAnnotation.IsActive)
                 {
                     currentAnimationGO.SetActive(false);
-                    if (highlightPointsAnnotation.getHasBeenCreated())
+                    if (highlightPointsAnnotation.getHasBeenCreated()) { 
                         staticAnnotationList.Add(highlightPointsAnnotation);
+                        DrawAnnotationsOnTimeline();
+                    }
                     bHighlightPoints = false;
                 }
                
@@ -284,8 +285,10 @@ public class AnnotationManager {
                 if (!scribblerAnnotation.IsActive)
                 {
                     currentAnimationGO.SetActive(false);
-                    if (scribblerAnnotation.getHasBeenCreated())
+                    if (scribblerAnnotation.getHasBeenCreated()) { 
                         staticAnnotationList.Add(scribblerAnnotation);
+                        DrawAnnotationsOnTimeline();
+                    }
 
                     bScribbler = false;
                 
@@ -299,8 +302,10 @@ public class AnnotationManager {
                 if (!speechAnnotation.IsActive)
                 {
                     currentAnimationGO.SetActive(false);
-                    if (speechAnnotation.getHasBeenCreated())
+                    if (speechAnnotation.getHasBeenCreated()) { 
                         staticAnnotationList.Add(speechAnnotation);
+                        DrawAnnotationsOnTimeline();
+                    }
                     bSpeechToText = false;
                 }
             }
@@ -314,8 +319,10 @@ public class AnnotationManager {
                 if (!markAnnotation.IsActive)
                 {
                     currentAnimationGO.SetActive(false);
-                    if (markAnnotation.getHasBeenCreated())
+                    if (markAnnotation.getHasBeenCreated()) {
                         staticAnnotationList.Add(markAnnotation);
+                        DrawAnnotationsOnTimeline();
+                    }
                     bMark = false;
                 }
             }
@@ -323,10 +330,7 @@ public class AnnotationManager {
         IsAnnotationActive = bHighlightPoints || bScribbler || bSpeechToText || bMark;
 
        if (!IsAnnotationActive) {
-
-           Debug.Log("Static annotation n = " + staticAnnotationList.Count);
-           
-           foreach (StaticAnnotation staticAnnotation in staticAnnotationList)
+            foreach (StaticAnnotation staticAnnotation in staticAnnotationList)
             {
                 if (RoughlyEqual(staticAnnotation.getStart(), currentTime)) {
                     _video.Pause();

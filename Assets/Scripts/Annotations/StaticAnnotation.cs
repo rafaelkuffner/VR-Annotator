@@ -12,6 +12,7 @@ public abstract class StaticAnnotation {
     protected GameObject _annotationIdGO;
     protected TextMesh _annotationID;
     protected bool _hasBeenCreated;
+    protected bool _editing;
 
     protected SteamVR_Controller.Device _rightController;
     protected GameObject _rightHand;
@@ -32,6 +33,7 @@ public abstract class StaticAnnotation {
         _start = 0.0f;
         _duration = 3.0f;
         _hasBeenCreated = false;
+        _editing = false;
 
         _annotationIdGO = GameObject.Instantiate(Resources.Load("Prefabs/AnnotationID")) as GameObject;
         _annotationIdGO.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
@@ -75,7 +77,16 @@ public abstract class StaticAnnotation {
     {
         return _hasBeenCreated;
     }
-    
+
+    public bool getEditing()
+    {
+        return _editing;
+    }
+
+    public void setEditing(bool editing)
+    {
+        _editing = editing;
+    }
     public abstract void annotate();
 
     public abstract void play();
