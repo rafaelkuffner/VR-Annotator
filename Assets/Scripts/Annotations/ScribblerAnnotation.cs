@@ -10,7 +10,7 @@ public class ScribblerAnnotation : StaticAnnotation {
     public LineRenderer lineRenderer { get; set; }
     public bool IsActive { get; set; }
     private List<Vector3> _myPoints;
-    private bool triggerPressed;
+    public bool triggerPressed;
     private BoxCollider boxCollider;
     private Vector3 midPoint;
     
@@ -75,6 +75,7 @@ public class ScribblerAnnotation : StaticAnnotation {
                 triggerPressed = false;
                 IsActive = false;
                 //_duration = Time.deltaTime - _start;
+                _hasBeenCreated = true;
                 Debug.Log("duration = " + _duration);
             }
         } 

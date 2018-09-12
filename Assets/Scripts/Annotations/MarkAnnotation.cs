@@ -63,6 +63,7 @@ public class MarkAnnotation : StaticAnnotation
                             markName = b.name;
                             MonoBehaviour.Destroy(markMenu);
                             _rightPointer.SetActive(false);
+                            _hasBeenCreated = true;
                             
                         }
                     }

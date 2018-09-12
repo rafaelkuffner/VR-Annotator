@@ -49,6 +49,7 @@ public class SpeechAnnotation : StaticAnnotation
                 triggerPressed = false;
                 IsActive = false;
                 _duration = Time.time - _start;
+                _hasBeenCreated = true;
                 Debug.Log("duration = " + _duration);
             }
         }

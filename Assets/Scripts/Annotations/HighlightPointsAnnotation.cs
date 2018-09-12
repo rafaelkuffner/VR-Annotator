@@ -54,6 +54,7 @@ public class HighlightPointsAnnotation : StaticAnnotation {
                 IsActive = false;
                 _duration = Time.time - _start;
                 Debug.Log("duration = " + _duration);
+                _hasBeenCreated = true;
             }
         }
     }

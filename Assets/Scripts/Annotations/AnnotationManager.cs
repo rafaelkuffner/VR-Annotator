@@ -121,7 +121,8 @@ public class AnnotationManager {
 
     public void HandleScribblerAnnotation()
     {
-        if (!bScribbler) {
+        if (!bScribbler)
+        {
 
             Renderer[] renderers = currentAnimationGO.GetComponentsInChildren<Renderer>();
             renderers[0].sharedMaterial = scribblerMaterial;
@@ -130,8 +131,7 @@ public class AnnotationManager {
             currentAnimationGO.SetActive(true);
             scribblerAnnotation = new ScribblerAnnotation(_video, _rightHand, _rightController,inputManager.PointerColor);
             scribblerAnnotation.IsActive = true;
-            scribblerAnnotation.setID(currentAnnotationID);
-            staticAnnotationList.Add(scribblerAnnotation);
+            scribblerAnnotation.setID(currentAnnotationID);           
             currentAnnotationID++;
             bScribbler = true;
         }
@@ -139,7 +139,8 @@ public class AnnotationManager {
 
     public void HandleMarkAnnotation(GameObject _head, GameObject _rightPointer)
     {
-        if (!bMark) {
+        if (!bMark)
+        {
 
             Renderer[] renderers = currentAnimationGO.GetComponentsInChildren<Renderer>();
             renderers[0].sharedMaterial =  markMaterial;
@@ -158,7 +159,8 @@ public class AnnotationManager {
 
     public void HandleSpeechAnnotation()
     {
-        if (!bSpeechToText) {
+        if (!bSpeechToText)
+        {
 
             Renderer[] renderers = currentAnimationGO.GetComponentsInChildren<Renderer>();
             renderers[0].sharedMaterial = speechMaterial;
@@ -189,6 +191,16 @@ public class AnnotationManager {
         bScribbler = false;
         bSpeechToText = false;
         bMark = false;
+    
+    }
+
+    public void resetStaticAnnotationList()
+    {
+        foreach (StaticAnnotation staticAnnotation in staticAnnotationList)
+        {
+            if (staticAnnotation.getHasBeenCreated())
+                staticAnnotationList.Remove(staticAnnotation);
+        }
     }
 
 
@@ -257,6 +269,8 @@ public class AnnotationManager {
                 if (!highlightPointsAnnotation.IsActive)
                 {
                     currentAnimationGO.SetActive(false);
+                    if (highlightPointsAnnotation.getHasBeenCreated())
+                        staticAnnotationList.Add(highlightPointsAnnotation);
                     bHighlightPoints = false;
                 }
                
@@ -270,7 +284,11 @@ public class AnnotationManager {
                 if (!scribblerAnnotation.IsActive)
                 {
                     currentAnimationGO.SetActive(false);
+                    if (scribblerAnnotation.getHasBeenCreated())
+                        staticAnnotationList.Add(scribblerAnnotation);
+
                     bScribbler = false;
+                
                 }
             }
             else if (bSpeechToText)
@@ -281,6 +299,8 @@ public class AnnotationManager {
                 if (!speechAnnotation.IsActive)
                 {
                     currentAnimationGO.SetActive(false);
+                    if (speechAnnotation.getHasBeenCreated())
+                        staticAnnotationList.Add(speechAnnotation);
                     bSpeechToText = false;
                 }
             }
@@ -294,14 +314,19 @@ public class AnnotationManager {
                 if (!markAnnotation.IsActive)
                 {
                     currentAnimationGO.SetActive(false);
+                    if (markAnnotation.getHasBeenCreated())
+                        staticAnnotationList.Add(markAnnotation);
                     bMark = false;
                 }
             }
         }
         IsAnnotationActive = bHighlightPoints || bScribbler || bSpeechToText || bMark;
 
-       if (!IsAnnotationActive) { 
-            foreach (StaticAnnotation staticAnnotation in staticAnnotationList)
+       if (!IsAnnotationActive) {
+
+           Debug.Log("Static annotation n = " + staticAnnotationList.Count);
+           
+           foreach (StaticAnnotation staticAnnotation in staticAnnotationList)
             {
                 if (RoughlyEqual(staticAnnotation.getStart(), currentTime)) {
                     _video.Pause();
