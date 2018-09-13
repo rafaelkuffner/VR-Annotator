@@ -180,7 +180,7 @@ public class TrackedBodyRepresentation
         bone.up = joint2 - joint1;
     }
 
-    public Transform findNearestBone(Vector3 position, Vector3 handPosition)
+    public Transform findNearestBone(Vector3 handPosition)
     {
         float minDist = float.MaxValue;
         float maxDist = 1f;

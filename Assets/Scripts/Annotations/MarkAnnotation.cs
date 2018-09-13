@@ -10,7 +10,8 @@ public class MarkAnnotation : StaticAnnotation
     GameObject markMenu;
     GameObject _rightPointer;
     GameObject _head;
-    string markName;
+    GameObject _markGO;
+    
 
     public MarkAnnotation(CloudVideoPlayer video, GameObject rightHand, SteamVR_Controller.Device rightController,
         GameObject head, GameObject rightPointer) :
@@ -28,62 +29,86 @@ public class MarkAnnotation : StaticAnnotation
         markMenu.transform.rotation = Quaternion.LookRotation(rot);
         markMenu.name = "MarkSelect";
         markMenu.SetActive(false);
-        markName = "";
-
+        _markGO = null;
     }
 
     public override void annotate()
     {
 
-        if (!IsActive)
-            Debug.Log("NOT MARKING ANNOTATING");
-
-        else
+        if (IsActive)
         {
-            markMenu.SetActive(true);
-            _rightPointer.SetActive(true);
+            if (_markGO == null) {
 
-            Ray raycast = new Ray(_rightHand.transform.position, _rightHand.transform.forward);
-            RaycastHit hit;
-            bool bHit = Physics.Raycast(raycast, out hit);
-            if (hit.transform != null)
-            {
-                Button b = hit.transform.gameObject.GetComponent<Button>();
-                if (b != null)
+                markMenu.SetActive(true);
+                markMenu.transform.position = new Vector3(markMenu.transform.position.x, 1.4f, markMenu.transform.position.z);
+                _rightPointer.SetActive(true);
+                Ray raycast = new Ray(_rightHand.transform.position, _rightHand.transform.forward);
+                RaycastHit hit;
+                bool bHit = Physics.Raycast(raycast, out hit);
+                if (hit.transform != null)
                 {
-                    b.Select();
-
-                    if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger))
+                    Button b = hit.transform.gameObject.GetComponent<Button>();
+                    if (b != null)
                     {
-                        if (b != null)
+                        b.Select();
+
+                        if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger))
                         {
-                            _start = Time.time;
-                            Debug.Log("MARK = " + b.name);
-                            IsActive = false;
-                            markName = b.name;
-                            MonoBehaviour.Destroy(markMenu);
-                            _rightPointer.SetActive(false);
-                            _hasBeenCreated = true;
+                            if (b != null)
+                            {
+                                Debug.Log("MARK = " + b.name);
+                                MonoBehaviour.Destroy(markMenu);
+                                _rightPointer.SetActive(false);
+                                _markGO = new GameObject();
+                                _markGO.transform.parent = _rightHand.transform;
+                                _markGO.transform.localPosition = new Vector3(0, 0, 0.1f);
+                                _markGO.transform.localRotation = Quaternion.identity; 
+                                _markGO.transform.localScale = new Vector3(0.05f, 0.05f, 0.05f);
+                                SpriteRenderer sr = _markGO.AddComponent<SpriteRenderer>();
+                                sr.sprite = (Sprite)Resources.Load(b.name, typeof(Sprite));
                             
+                            }
                         }
                     }
                 }
+            }
+            else
+            {
+                if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger))
+                {
+                    _start = _video.getTime();
+                    IsActive = false;
+                    _hasBeenCreated = true;
+                    _markGO.transform.parent = null;
+
+                }
+                        
+                
+
             }
         }
     }
 
     public override void play()
     {
-        throw new System.NotImplementedException();
+        _markGO.SetActive(true);
     }
 
     public override void stop()
     {
-        throw new System.NotImplementedException();
+        _markGO.SetActive(false);
     }
 
     public override void edit()
     {
         throw new System.NotImplementedException();
+    }
+
+    public override void reset()
+    {
+        if(markMenu != null)
+            GameObject.Destroy(markMenu);
+        if(_markGO != null)
+            GameObject.Destroy(_markGO);
     }
 }

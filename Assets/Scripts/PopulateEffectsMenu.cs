@@ -26,7 +26,7 @@ public class PopulateEffectsMenu : MonoBehaviour {
             b = b.Replace(".prefab", "");
             g.GetComponentInChildren<Text>().text = b;
             g.transform.SetParent(this.transform, false);
-            //g.GetComponentInChildren<Text>().text = b;
+            g.name = b;
             count++;
             
         }

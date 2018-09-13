@@ -12,6 +12,11 @@ public class SkeletonRepresentation : MonoBehaviour {
         _tbr = tbr;
     }
 
+    public TrackedBodyRepresentation getTBR()
+    {
+        return _tbr;
+    }
+
     public void show()
     {
         _tbr.show();

@@ -117,7 +117,7 @@ public class InputManager : MonoBehaviour {
         _slider = GameObject.Find("Timeline");
         _controlDataset = Instantiate(Resources.Load("Prefabs/ControlDataset")) as GameObject;
         _controlDataset.SetActive(false);
-
+        _representation = "Full";
         annotationManagerByVideo = new Dictionary<CloudVideoPlayer, AnnotationManager>();
 
 	}
@@ -241,6 +241,10 @@ public class InputManager : MonoBehaviour {
                 _video.show();
                 if (o != null) o.GetComponent<SkeletonRepresentation>().hide();
                 break;
+            case "None":
+                _video.hide();
+                if (o != null) o.GetComponent<SkeletonRepresentation>().hide();
+                break;
         }
 		_representation = representation;
     }
@@ -328,7 +332,7 @@ public class InputManager : MonoBehaviour {
                 if (touchpad.y > 0.7f)
                 {
                     print("HighlightPoints Annotation");
-                    _annotationManager.HandleHighlightPointsAnnotation();
+                    _annotationManager.HandleVisualEffectsAnnotation(_head, _rightPointer);
                 }
                 else if (touchpad.y < -0.7f)
                 {
@@ -382,13 +386,17 @@ public class InputManager : MonoBehaviour {
 
         InputOpenMenus();
 
-        if (_video != null)
+        if (_video != null )
         {
             float ratio = _video.getTime() / _video.getDuration();
-            _slider.SetActive(true);
-            _slider.GetComponentInChildren<Slider>().value = ratio;
-            _slider.transform.position = new Vector3(0, 2.5f, 0);
-            _slider.transform.forward =  Camera.main.transform.forward;
+
+            if (ratio != float.NaN) 
+            { 
+                _slider.SetActive(true);
+                _slider.GetComponentInChildren<Slider>().value = ratio;
+                _slider.transform.position = new Vector3(0, 2.5f, 0);
+                _slider.transform.forward =  Camera.main.transform.forward;
+            }
 
         }
 

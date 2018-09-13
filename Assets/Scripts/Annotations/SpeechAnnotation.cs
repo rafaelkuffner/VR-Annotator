@@ -7,8 +7,8 @@ public class SpeechAnnotation : StaticAnnotation
     private GameObject audioSourceGO { get; set; }
     private AudioSource audioSource;
     public bool IsActive { get; set; }
-    private AudioClip audioClip;
     private bool triggerPressed;
+    private float _recordingTime;
 
     public SpeechAnnotation(CloudVideoPlayer video, GameObject rightHand, SteamVR_Controller.Device rightController) :
         base(video, rightHand, rightController)
@@ -16,7 +16,6 @@ public class SpeechAnnotation : StaticAnnotation
         audioSourceGO = MonoBehaviour.Instantiate(Resources.Load("Prefabs/AudioSourcePrefab")) as GameObject;
         audioSource = audioSourceGO.GetComponent<AudioSource>();
         IsActive = false;
-        audioClip = null;
         triggerPressed = false;
     }
 
@@ -25,39 +24,38 @@ public class SpeechAnnotation : StaticAnnotation
         Debug.Log("annotate method scribbler");
 
         if (!IsActive)
-            audioClip = null;
+            audioSource = null;
         else
         {
 
             if (_rightController.GetPressDown(SteamVR_Controller.ButtonMask.Trigger))
             {
                 triggerPressed = true;
-                _start = Time.time;
                 Debug.Log("start = " + _start);
+                _start = _video.getTime();
+                audioSource.clip = Microphone.Start("2- HTC Vive", true, 120, 44100); // lenght???
+                _recordingTime = 0;
             }
-
             if (triggerPressed)
             {
-                audioSource.clip = Microphone.Start("2- HTC Vive", true, 120, 44100); // lenght????
-                Debug.Log("Recorded audoclip lenght = " + audioSource.clip.length); 
-                Debug.Log("Recording audio...."); 
+              _recordingTime += Time.deltaTime; 
             }
-
             if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger))
             {
-                audioClip = audioSource.clip;
+                Microphone.End("2- HTC Vive");
                 triggerPressed = false;
                 IsActive = false;
-                _duration = Time.time - _start;
                 _hasBeenCreated = true;
-                Debug.Log("duration = " + _duration);
+                _duration = _recordingTime;
+                Debug.Log("Duration is " + _duration);
             }
         }
     }
 
     public override void play()
     {
-        audioSource.Play();
+        if(!audioSource.isPlaying && AnnotationManager.RoughlyEqual(_start,_video.getTime()))
+            audioSource.Play();
     }
 
     public override void stop()
@@ -68,5 +66,12 @@ public class SpeechAnnotation : StaticAnnotation
     public override void edit()
     {
         throw new System.NotImplementedException();
+    }
+    public override void reset()
+    {
+        if (audioSourceGO != null)
+        {
+            GameObject.Destroy(audioSourceGO);
+        }
     }
 }

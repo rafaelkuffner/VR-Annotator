@@ -12,7 +12,7 @@ public class AnnotationManager {
 
     private GameObject currentAnimationGO;
 
-    private bool bHighlightPoints;
+    private bool bVisualEffect;
     private bool bScribbler;
     private bool bSpeechToText;
     private bool bMark;
@@ -23,8 +23,8 @@ public class AnnotationManager {
     public GameObject scribblerGO;
     private Material scribblerMaterial;
 
-    public GameObject highlightPointsGO;
-    private Material highlightPointsMaterial;
+    public GameObject visualEffectsGO;
+    private Material visualEffectsMaterial;
 
     public GameObject markGO;
     private Material markMaterial;
@@ -37,7 +37,7 @@ public class AnnotationManager {
     private CloudVideoPlayer _video;
 
     private ScribblerAnnotation scribblerAnnotation;
-    private HighlightPointsAnnotation highlightPointsAnnotation;
+    private VisualEffectAnnotation visualEffectAnnotation;
     private MarkAnnotation markAnnotation;
     private SpeechAnnotation speechAnnotation;
 
@@ -70,7 +70,7 @@ public class AnnotationManager {
         currentAnimationGO = GameObject.Instantiate(Resources.Load("Prefabs/CurrentAnnotation")) as GameObject;
         currentAnimationGO.SetActive(false);
 
-        bHighlightPoints = false;
+        bVisualEffect = false;
         bScribbler = false;
         bSpeechToText = false;
         bMark = false;
@@ -81,14 +81,14 @@ public class AnnotationManager {
 
         scribblerMaterial = Resources.Load("Materials/scribblerMat") as Material;
 
-        highlightPointsMaterial = Resources.Load("Materials/highlightPointsMat") as Material;
+        visualEffectsMaterial = Resources.Load("Materials/highlightPointsMat") as Material;
 
         markMaterial = Resources.Load("Materials/markMat") as Material;
 
         deleteTexture = Resources.Load("Textures/deleteActive") as Texture;
 
         scribblerAnnotation = null;
-        highlightPointsAnnotation = null;
+        visualEffectAnnotation = null;
         markAnnotation = null;
         speechAnnotation = null;
         staticAnnotationList = new List<StaticAnnotation>();
@@ -100,22 +100,22 @@ public class AnnotationManager {
     }
 
     
-    public void HandleHighlightPointsAnnotation()
+    public void HandleVisualEffectsAnnotation(GameObject _head, GameObject _rightPointer)
     {
-        if (!bHighlightPoints)
+        if (!bVisualEffect)
         {
             Renderer[] renderers = currentAnimationGO.GetComponentsInChildren<Renderer>();
-            renderers[0].sharedMaterial = highlightPointsMaterial;
-            renderers[1].sharedMaterial = highlightPointsMaterial;
+            renderers[0].sharedMaterial = visualEffectsMaterial;
+            renderers[1].sharedMaterial = visualEffectsMaterial;
 
             //currentAnimationGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", highlightPointsTexture);
             currentAnimationGO.SetActive(true);
-            highlightPointsAnnotation = new HighlightPointsAnnotation(_video, _rightHand, _rightController);
-            highlightPointsAnnotation.IsActive = true;
-            highlightPointsAnnotation.setID(currentAnnotationID);
-            staticAnnotationList.Add(highlightPointsAnnotation);
+            visualEffectAnnotation = new VisualEffectAnnotation(_video, _rightHand, _rightController, _head, _rightPointer, inputManager.PointerColor);
+            visualEffectAnnotation.IsActive = true;
+            visualEffectAnnotation.setID(currentAnnotationID);
+            staticAnnotationList.Add(visualEffectAnnotation);
             currentAnnotationID++;
-            bHighlightPoints = true;
+            bVisualEffect = true;
         }
     }
 
@@ -151,7 +151,6 @@ public class AnnotationManager {
             markAnnotation = new MarkAnnotation(_video, _rightHand, _rightController, _head, _rightPointer);
             markAnnotation.IsActive = true;
             markAnnotation.setID(currentAnnotationID);
-            staticAnnotationList.Add(markAnnotation);
             currentAnnotationID++;
             bMark = true;
         }
@@ -171,7 +170,6 @@ public class AnnotationManager {
             speechAnnotation = new SpeechAnnotation(_video, _rightHand, _rightController);
             speechAnnotation.IsActive = true;
             speechAnnotation.setID(currentAnnotationID);
-            staticAnnotationList.Add(speechAnnotation);
             currentAnnotationID++;
             bSpeechToText = true;
         }
@@ -186,12 +184,17 @@ public class AnnotationManager {
 
     public void Reset()
     {
-        currentAnimationGO.SetActive(false);
-        bHighlightPoints = false;
+        if (currentAnimationGO != null) currentAnimationGO.SetActive(false);
+        if (bMark) markAnnotation.reset();
+        if (bVisualEffect) visualEffectAnnotation.reset();
+        if (bScribbler) scribblerAnnotation.reset();
+        if (bSpeechToText) speechAnnotation.reset();
+
+        bVisualEffect = false;
         bScribbler = false;
         bSpeechToText = false;
         bMark = false;
-    
+
     }
 
     public void resetStaticAnnotationList()
@@ -239,17 +242,17 @@ public class AnnotationManager {
 		}
 	}
 
-    static bool RoughlyEqual(float a, float b)
+    public static bool RoughlyEqual(float a, float b)
     {
-        float treshold = 1.2f; //how much roughly
+        float treshold = 0.2f; //how much roughly
         return (Math.Abs(a - b) < treshold);
     }
 
 	// Update is called once per frame
 	public void Update () {
 
-		currentTime += Time.deltaTime;
-
+		currentTime = _video.getTime();//+= Time.deltaTime;
+        
         if (IsAnnotationActive) {
 
             Debug.Log("number of static annotation = " + staticAnnotationList.Count);
@@ -259,27 +262,25 @@ public class AnnotationManager {
             rot.y = 0.0f;
             currentAnimationGO.transform.rotation = Quaternion.LookRotation(rot);
       
-            if (bHighlightPoints)
+            if (bVisualEffect)
             {
                 Debug.Log("Start highlightPoint Annotation");
-                highlightPointsAnnotation.setStart(currentTime);
-                highlightPointsAnnotation.annotate();
+                visualEffectAnnotation.annotate();
 
-                if (!highlightPointsAnnotation.IsActive)
+                if (!visualEffectAnnotation.IsActive)
                 {
                     currentAnimationGO.SetActive(false);
-                    if (highlightPointsAnnotation.getHasBeenCreated()) { 
-                        staticAnnotationList.Add(highlightPointsAnnotation);
+                    if (visualEffectAnnotation.getHasBeenCreated()) { 
+                        staticAnnotationList.Add(visualEffectAnnotation);
                         DrawAnnotationsOnTimeline();
                     }
-                    bHighlightPoints = false;
+                    bVisualEffect = false;
                 }
                
             }
             else if(bScribbler) 
             {
                 Debug.Log("Start Scribbler Annotation");
-                scribblerAnnotation.setStart(currentTime);
                 scribblerAnnotation.annotate();
                 
                 if (!scribblerAnnotation.IsActive)
@@ -297,7 +298,6 @@ public class AnnotationManager {
             else if (bSpeechToText)
             {
                 Debug.Log("Start SpeechToText Annotation");
-                speechAnnotation.setStart(currentTime);
                 speechAnnotation.annotate();
                 if (!speechAnnotation.IsActive)
                 {
@@ -313,7 +313,6 @@ public class AnnotationManager {
             else if (bMark)
             {
                 Debug.Log("Start Mark Annotation");
-                markAnnotation.setStart(currentTime);
                 markAnnotation.annotate();
 
                 if (!markAnnotation.IsActive)
@@ -327,32 +326,36 @@ public class AnnotationManager {
                 }
             }
         }
-        IsAnnotationActive = bHighlightPoints || bScribbler || bSpeechToText || bMark;
+        IsAnnotationActive = bVisualEffect || bScribbler || bSpeechToText || bMark;
 
        if (!IsAnnotationActive) {
             foreach (StaticAnnotation staticAnnotation in staticAnnotationList)
             {
-                if (RoughlyEqual(staticAnnotation.getStart(), currentTime)) {
-                    _video.Pause();
-                    staticAnnotation.play();
-                }
+                //if (RoughlyEqual(staticAnnotation.getStart(), currentTime)) {
+                //    //_video.Pause();
+                //    staticAnnotation.play();
+                //}
 
-                if (currentTime > staticAnnotation.getStart() && RoughlyEqual(staticAnnotation.getStart() + staticAnnotation.getDuration(), currentTime)) 
+                if (currentTime >= staticAnnotation.getStart() && currentTime < staticAnnotation.getStart() + staticAnnotation.getDuration()) 
+                {
+                    staticAnnotation.play();
+                    //_video.Play();
+                }
+                else
                 {
                     staticAnnotation.stop();
-                    _video.Play();
                 }
             }
         }
 
-       if (IsPlayingVideo)
-       {
-           Time.timeScale = 1.0f;
-       }
-       else
-       {
-           Time.timeScale = 0.0f;
-       }
+       //if (IsPlayingVideo)
+       //{
+       //    Time.timeScale = 1.0f;
+       //}
+       //else
+       //{
+       //    Time.timeScale = 0.0f;
+       //}
 
 	}
 }

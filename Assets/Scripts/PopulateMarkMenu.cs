@@ -19,7 +19,6 @@ public class PopulateMarkMenu : MonoBehaviour {
         {
             if (s.Contains(".meta")) continue;
             GameObject g = Instantiate(butPrefab);
-            g.name = s;
             char[] sep = { '\\' };
             string[] tokens = s.Split(sep);
             string b = tokens[tokens.Length - 1];
@@ -33,7 +32,7 @@ public class PopulateMarkMenu : MonoBehaviour {
                 if(img[i].gameObject!=g)
                     img[i].sprite = p;
             }
-                
+            g.name = b; 
             g.transform.SetParent(this.transform, false);
             //g.GetComponentInChildren<Text>().text = b;
             count++;
