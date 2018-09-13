@@ -9,6 +9,7 @@ public class SpeechAnnotation : StaticAnnotation
     public bool IsActive { get; set; }
     private bool triggerPressed;
     private float _recordingTime;
+    private GameObject audioVisualCueGO;
 
     public SpeechAnnotation(CloudVideoPlayer video, GameObject rightHand, SteamVR_Controller.Device rightController) :
         base(video, rightHand, rightController)
@@ -17,6 +18,7 @@ public class SpeechAnnotation : StaticAnnotation
         audioSource = audioSourceGO.GetComponent<AudioSource>();
         IsActive = false;
         triggerPressed = false;
+        audioVisualCueGO = null;
     }
 
     public override void annotate()
@@ -43,6 +45,13 @@ public class SpeechAnnotation : StaticAnnotation
             if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger))
             {
                 Microphone.End("2- HTC Vive");
+                audioVisualCueGO = new GameObject();
+                audioVisualCueGO.transform.position = _rightHand.transform.position;
+                audioVisualCueGO.transform.rotation = Quaternion.identity;
+                audioVisualCueGO.transform.localScale = new Vector3(0.05f, 0.05f, 0.05f);
+                SpriteRenderer sr = audioVisualCueGO.AddComponent<SpriteRenderer>();
+                sr.sprite = (Sprite)Resources.Load("Sprites/microphone", typeof(Sprite));
+
                 triggerPressed = false;
                 IsActive = false;
                 _hasBeenCreated = true;
@@ -54,13 +63,17 @@ public class SpeechAnnotation : StaticAnnotation
 
     public override void play()
     {
-        if(!audioSource.isPlaying && AnnotationManager.RoughlyEqual(_start,_video.getTime()))
+        if (!audioSource.isPlaying && AnnotationManager.RoughlyEqual(_start, _video.getTime()))
+        {
+            audioVisualCueGO.SetActive(true);
             audioSource.Play();
+        }
     }
 
     public override void stop()
     {
         audioSource.Stop();
+        audioVisualCueGO.SetActive(false);
     }
 
     public override void edit()

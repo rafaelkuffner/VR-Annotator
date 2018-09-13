@@ -368,6 +368,7 @@ public class InputManager : MonoBehaviour {
         if (o != null) Destroy(o);
         DisableLeftPointer();
         DisableRightPointer();
+        _controlDataset.SetActive(false);
         return;
     }
 
@@ -417,6 +418,8 @@ public class InputManager : MonoBehaviour {
             _menuGO.transform.rotation = Quaternion.LookRotation(rot);
             SelectAnnotationType();
         }
+
+  
         //if no menu is opened, annotation input, and playback control
         else if (_menu == MenuOpened.None)
         {
@@ -431,7 +434,7 @@ public class InputManager : MonoBehaviour {
                 Vector3 rot = Camera.main.transform.forward;
                 rot.y = 0.0f;
                 _controlDataset.transform.rotation = Quaternion.LookRotation(rot);
-            }
+            } 
 
             if (_leftController.GetPressUp(SteamVR_Controller.ButtonMask.Touchpad))
             {

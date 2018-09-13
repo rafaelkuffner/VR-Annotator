@@ -113,7 +113,6 @@ public class AnnotationManager {
             visualEffectAnnotation = new VisualEffectAnnotation(_video, _rightHand, _rightController, _head, _rightPointer, inputManager.PointerColor);
             visualEffectAnnotation.IsActive = true;
             visualEffectAnnotation.setID(currentAnnotationID);
-            staticAnnotationList.Add(visualEffectAnnotation);
             currentAnnotationID++;
             bVisualEffect = true;
         }
@@ -331,11 +330,7 @@ public class AnnotationManager {
        if (!IsAnnotationActive) {
             foreach (StaticAnnotation staticAnnotation in staticAnnotationList)
             {
-                //if (RoughlyEqual(staticAnnotation.getStart(), currentTime)) {
-                //    //_video.Pause();
-                //    staticAnnotation.play();
-                //}
-
+     
                 if (currentTime >= staticAnnotation.getStart() && currentTime < staticAnnotation.getStart() + staticAnnotation.getDuration()) 
                 {
                     staticAnnotation.play();
@@ -347,15 +342,5 @@ public class AnnotationManager {
                 }
             }
         }
-
-       //if (IsPlayingVideo)
-       //{
-       //    Time.timeScale = 1.0f;
-       //}
-       //else
-       //{
-       //    Time.timeScale = 0.0f;
-       //}
-
 	}
 }
