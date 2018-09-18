@@ -93,7 +93,7 @@ public abstract class StaticAnnotation {
 
     public abstract void stop();
 
-    public abstract void edit();
+    public abstract int edit();
 
     public abstract void reset();
 }

@@ -43,6 +43,8 @@ public class AnnotationManager {
 
     private InputManager inputManager;
 
+    public int currentAnnotationSelected { get; set; }
+
     public float currentTime { get; set; }
 
     public List<StaticAnnotation> staticAnnotationList;
@@ -97,6 +99,7 @@ public class AnnotationManager {
         currentAnnotationID = 0;
 
         inputManager = GameObject.Find("InputManager").GetComponent<InputManager>();
+        currentAnnotationSelected = -1;
     }
 
     
@@ -184,10 +187,10 @@ public class AnnotationManager {
     public void Reset()
     {
         if (currentAnimationGO != null) currentAnimationGO.SetActive(false);
-        if (bMark) markAnnotation.reset();
-        if (bVisualEffect) visualEffectAnnotation.reset();
-        if (bScribbler) scribblerAnnotation.reset();
-        if (bSpeechToText) speechAnnotation.reset();
+        if (bMark && markAnnotation != null) markAnnotation.reset();
+        if (bVisualEffect && visualEffectAnnotation != null) visualEffectAnnotation.reset();
+        if (bScribbler && scribblerAnnotation != null) scribblerAnnotation.reset();
+        if (bSpeechToText && speechAnnotation != null) speechAnnotation.reset();
 
         bVisualEffect = false;
         bScribbler = false;
@@ -209,7 +212,24 @@ public class AnnotationManager {
     public void EditAnnotation()
     {
         foreach(StaticAnnotation staticAnnotation in staticAnnotationList){
-            staticAnnotation.edit();
+            currentAnnotationSelected = staticAnnotation.edit();
+        }
+    }
+
+    public void DeleteAnnotation()
+    {
+        if (currentAnnotationSelected != -1)
+        {
+            foreach (StaticAnnotation staticAnnotation in staticAnnotationList)
+            {
+                if (staticAnnotation.getID() == currentAnnotationSelected)
+                {
+                    staticAnnotation.reset();
+                    staticAnnotationList.Remove(staticAnnotation);
+                    currentAnnotationSelected = -1;
+                    return;
+                }
+            }
         }
     }
 

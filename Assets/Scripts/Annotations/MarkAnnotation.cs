@@ -99,9 +99,12 @@ public class MarkAnnotation : StaticAnnotation
         _markGO.SetActive(false);
     }
 
-    public override void edit()
+    public override int edit()
     {
-        throw new System.NotImplementedException();
+        if (_markGO.activeSelf)
+            return _id;
+        else
+            return -1;
     }
 
     public override void reset()

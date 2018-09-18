@@ -123,9 +123,12 @@ public class VisualEffectAnnotation : StaticAnnotation {
         _effectGO.SetActive(false);
     }
 
-    public override void edit()
+    public override int edit()
     {
-        throw new System.NotImplementedException();
+        if (_effectGO.activeSelf)
+            return _id;
+        else
+            return -1;
     }
 
     public override void reset()

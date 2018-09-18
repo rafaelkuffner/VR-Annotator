@@ -328,7 +328,15 @@ public class InputManager : MonoBehaviour {
             {
                 Vector2 touchpad = _rightController.GetAxis(EVRButtonId.k_EButton_SteamVR_Touchpad);
                 //Debug.Log("Axis x = " + touchpad.x + " | Axis y = " + touchpad.y);
-                
+
+                if (_annotationManager.currentAnnotationSelected != -1) { 
+                    _annotationManager.DeleteAnnotation();
+                  //  CloseAllMenus();
+                    Debug.Log("DELETING ANNOTATION");
+                    return;
+                } 
+
+
                 if (touchpad.y > 0.7f)
                 {
                     print("HighlightPoints Annotation");
@@ -501,7 +509,11 @@ public class InputManager : MonoBehaviour {
             {
                 EnableRightPointer();
                 if (_annotationManager != null)
+                {
                     _annotationManager.EditAnnotation();
+                    Debug.Log("Annotation Selected = " + _annotationManager.currentAnnotationSelected);
+                }
+               
             }
             if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger) && _annotationManager != null && !_annotationManager.IsAnnotationActive)
             {

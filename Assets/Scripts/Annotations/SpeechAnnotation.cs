@@ -76,9 +76,13 @@ public class SpeechAnnotation : StaticAnnotation
         audioVisualCueGO.SetActive(false);
     }
 
-    public override void edit()
+    public override int edit()
     {
-        throw new System.NotImplementedException();
+        if (audioSourceGO.activeSelf)
+            return _id;
+        else
+            return -1;
+
     }
     public override void reset()
     {
