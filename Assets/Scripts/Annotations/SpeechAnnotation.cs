@@ -11,8 +11,8 @@ public class SpeechAnnotation : StaticAnnotation
     private float _recordingTime;
     private GameObject audioVisualCueGO;
 
-    public SpeechAnnotation(CloudVideoPlayer video, GameObject rightHand, SteamVR_Controller.Device rightController) :
-        base(video, rightHand, rightController)
+    public SpeechAnnotation(CloudVideoPlayer video, GameObject rightHand, SteamVR_Controller.Device rightController, GameObject head) :
+        base(video, rightHand, rightController, head)
     {
         audioSourceGO = MonoBehaviour.Instantiate(Resources.Load("Prefabs/AudioSourcePrefab")) as GameObject;
         audioSource = audioSourceGO.GetComponent<AudioSource>();
@@ -78,12 +78,28 @@ public class SpeechAnnotation : StaticAnnotation
 
     public override int edit()
     {
+       
         if (audioSourceGO.activeSelf)
             return _id;
         else
             return -1;
 
     }
+
+    public override void increaseDuration()
+    {
+    }
+
+    public override void decreaseDuration()
+    {
+    }
+
+    public override void disableDurationGO()
+    {
+        if(_annotationIdGO.activeSelf)
+            _annotationIdGO.SetActive(false);
+    }
+
     public override void reset()
     {
         if (audioSourceGO != null)

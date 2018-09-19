@@ -173,6 +173,11 @@ public class CloudVideoPlayer{
         Debug.Log("Stop!");
 
     }
+
+    public bool Playing()
+    {
+        return _inputManager._playing;
+    }
     public void Close()
     {
         foreach (PointCloudDepth pcd in _clouds.Values)

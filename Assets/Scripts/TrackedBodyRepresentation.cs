@@ -6,8 +6,8 @@ using MyTechnic;
 public class TrackedBodyRepresentation
 {
 
-    public const float ballSize = 0.07f;
-    public const float boneSize = 0.025f;
+    public const float ballSize = 0.05f;
+    public const float boneSize = 0.015f;
     // Body transforms and joints
 
     public List<Transform> bodyTransforms;

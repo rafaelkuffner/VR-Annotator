@@ -46,7 +46,7 @@ public class InputManager : MonoBehaviour {
 
     public enum MenuOpened
     {
-        DatasetSelect,ColorSelect,AnnotationSelect,None
+        DatasetSelect,ColorSelect,AnnotationSelect,AnnotationEdit,None
     }
 
     void setupRightPointer()
@@ -196,8 +196,8 @@ public class InputManager : MonoBehaviour {
         {
             //GameObject menu;
             CloseAllMenus();
-           
-            if (_menu != MenuOpened.AnnotationSelect)
+
+            if (_menu != MenuOpened.AnnotationSelect && _menu != MenuOpened.AnnotationEdit && _annotationManager != null)
             {
                 _annotationManager.Reset(); // cancel any active annotation
                 _menuGO = Instantiate(Resources.Load("Prefabs/AnnotationMenu")) as GameObject;
@@ -214,6 +214,21 @@ public class InputManager : MonoBehaviour {
             {
                 _menu = MenuOpened.None;
             } 
+        }
+        if (_annotationManager != null &&_annotationManager.currentAnnotationSelected != -1)
+        {
+            if (_menu != MenuOpened.AnnotationEdit)
+            {
+                _menuGO = Instantiate(Resources.Load("Prefabs/EditAnnotationMenu")) as GameObject;
+                _menuGO.name = "EditAnnotationMenu";
+                _menuGO.transform.position = new Vector3(_rightHand.transform.position.x,
+                        _rightHand.transform.position.y + 0.08f, _rightHand.transform.position.z);
+                //Vector3 rot = Camera.main.transform.forward;
+                Vector3 rot = _head.transform.forward;
+                rot.y = 0.0f;
+                _menuGO.transform.rotation = Quaternion.LookRotation(rot);
+                _menu = MenuOpened.AnnotationEdit;
+            }
         }
     }
 
@@ -259,7 +274,7 @@ public class InputManager : MonoBehaviour {
              if (b != null) { 
                  b.Select();
 
-                 if (_leftController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger))
+                 if (_leftController.GetPress(SteamVR_Controller.ButtonMask.Trigger))
                  {
                      if (b.name == "PlaySpeed")
                      {
@@ -308,7 +323,7 @@ public class InputManager : MonoBehaviour {
             pixelUV.x *= tex.width;
             pixelUV.y *= tex.height;
             Color p = tex.GetPixel((int)pixelUV.x, (int)pixelUV.y);
-            if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger))
+            if (_rightController.GetPress(SteamVR_Controller.ButtonMask.Trigger))
             {
 				_rightPointer.GetComponent<MeshRenderer>().material.SetColor("_Color",p);
 				_pointerColor = p;
@@ -328,14 +343,6 @@ public class InputManager : MonoBehaviour {
             {
                 Vector2 touchpad = _rightController.GetAxis(EVRButtonId.k_EButton_SteamVR_Touchpad);
                 //Debug.Log("Axis x = " + touchpad.x + " | Axis y = " + touchpad.y);
-
-                if (_annotationManager.currentAnnotationSelected != -1) { 
-                    _annotationManager.DeleteAnnotation();
-                  //  CloseAllMenus();
-                    Debug.Log("DELETING ANNOTATION");
-                    return;
-                } 
-
 
                 if (touchpad.y > 0.7f)
                 {
@@ -365,7 +372,48 @@ public class InputManager : MonoBehaviour {
             }
         }  
     }
-    
+
+    void EditAnnotations()
+    {
+        if (_rightController.GetPress(SteamVR_Controller.ButtonMask.Touchpad))
+        {
+            if (!_annotationManager.IsAnnotationActive)
+            {
+                Vector2 touchpad = _rightController.GetAxis(EVRButtonId.k_EButton_SteamVR_Touchpad);
+                //Debug.Log("Axis x = " + touchpad.x + " | Axis y = " + touchpad.y);
+
+                if (touchpad.y > 0.7f)
+                {
+                    _annotationManager.DisableDurationGO();
+                    _annotationManager.DeleteAnnotation();
+                    _annotationManager.currentAnnotationSelected = -1;
+                    _menu = MenuOpened.None;
+                    CloseAllMenus();
+                }
+                else if (touchpad.y < -0.7f)
+                {
+                    _annotationManager.currentAnnotationSelected = -1;
+                    _annotationManager.DisableDurationGO();
+                    _menu = MenuOpened.None;
+                    CloseAllMenus();
+                }
+                else if (touchpad.x > 0.7f)
+                {
+                    _annotationManager.IncrementDuration();
+                }
+                else if (touchpad.x < -0.7f)
+                {
+                    _annotationManager.DecreaseDuration();
+                }
+                /*else
+                {
+                    _annotationManager.IsAnnotationActive = false;
+                    _annotationManager.DisableAnnotations();
+                } */
+            }
+        }  
+    }
+
     void CloseAllMenus()
     {
         GameObject o = GameObject.Find("DatasetSelect");
@@ -373,6 +421,8 @@ public class InputManager : MonoBehaviour {
         o = GameObject.Find("ColorSelect");
         if (o != null) Destroy(o);
         o = GameObject.Find("AnnotationSelect");
+        if (o != null) Destroy(o);
+        o = GameObject.Find("EditAnnotationMenu");
         if (o != null) Destroy(o);
         DisableLeftPointer();
         DisableRightPointer();
@@ -390,6 +440,7 @@ public class InputManager : MonoBehaviour {
         if (_annotationManager != null) { 
             _annotationManager.SetRightHand(_rightHand);
             _annotationManager.SetRightHandController(_rightController);
+            _annotationManager.SetHead(_head);
             _annotationManager.Update();
         }
 
@@ -397,14 +448,14 @@ public class InputManager : MonoBehaviour {
 
         if (_video != null )
         {
-            float ratio = _video.getTime() / _video.getDuration();
+            if (_video.getTime() != 0 && _video.getDuration() != 0) 
+            {
+                float ratio = _video.getTime() / _video.getDuration();
 
-            if (ratio != float.NaN) 
-            { 
-                _slider.SetActive(true);
+                //_slider.SetActive(true);
                 _slider.GetComponentInChildren<Slider>().value = ratio;
-                _slider.transform.position = new Vector3(0, 2.5f, 0);
-                _slider.transform.forward =  Camera.main.transform.forward;
+                //_slider.transform.position = new Vector3(0, 2.5f, 0);
+              //  _slider.transform.forward =  Camera.main.transform.forward;
             }
 
         }
@@ -425,6 +476,15 @@ public class InputManager : MonoBehaviour {
             rot.y = 0.0f;
             _menuGO.transform.rotation = Quaternion.LookRotation(rot);
             SelectAnnotationType();
+        }
+        else if (_menu == MenuOpened.AnnotationEdit)
+        {
+            _menuGO.transform.position = new Vector3(_rightHand.transform.position.x,
+                     _rightHand.transform.position.y + 0.15f, _rightHand.transform.position.z);
+            Vector3 rot = _head.transform.forward;
+            rot.y = 0.0f;
+            _menuGO.transform.rotation = Quaternion.LookRotation(rot);
+            EditAnnotations();
         }
 
   
@@ -460,6 +520,8 @@ public class InputManager : MonoBehaviour {
                     _annotationManager.IsPlayingVideo = false;
 					GameObject o = GameObject.Find("Avatar");
 					if (o != null) o.GetComponent<SkeletonRepresentation>().hide();
+         
+
                 }
 
                 else if (touchpad.y < -0.7f)

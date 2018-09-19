@@ -333,7 +333,9 @@ public class PointCloudDepth : MonoBehaviour
     {
         if (_depthStreamDone || _player.frame == (long)_player.frameCount)
         {
-            _mainPlayer.Stop();
+            if (_mainPlayer.Playing()) { 
+                _mainPlayer.Stop();
+            }
             _depthStreamDone = false;
             return;
         }

@@ -35,6 +35,7 @@ public class AnnotationManager {
     private SteamVR_Controller.Device _rightController;
     private GameObject _rightHand;
     private CloudVideoPlayer _video;
+    private GameObject _head;
 
     private ScribblerAnnotation scribblerAnnotation;
     private VisualEffectAnnotation visualEffectAnnotation;
@@ -62,6 +63,11 @@ public class AnnotationManager {
     public void SetRightHandController(SteamVR_Controller.Device rightController)
     {
         _rightController = rightController;
+    }
+
+    public void SetHead(GameObject head)
+    {
+        _head = head;
     }
 
     // Use this for initialization
@@ -100,6 +106,7 @@ public class AnnotationManager {
 
         inputManager = GameObject.Find("InputManager").GetComponent<InputManager>();
         currentAnnotationSelected = -1;
+        DrawAnnotationsOnTimeline();
     }
 
     
@@ -131,7 +138,7 @@ public class AnnotationManager {
             renderers[1].sharedMaterial = scribblerMaterial;
             //currentAnimationGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", scribblerTexture);
             currentAnimationGO.SetActive(true);
-            scribblerAnnotation = new ScribblerAnnotation(_video, _rightHand, _rightController,inputManager.PointerColor);
+            scribblerAnnotation = new ScribblerAnnotation(_video, _rightHand, _rightController,inputManager.PointerColor, _head);
             scribblerAnnotation.IsActive = true;
             scribblerAnnotation.setID(currentAnnotationID);           
             currentAnnotationID++;
@@ -169,7 +176,7 @@ public class AnnotationManager {
             
             //currentAnimationGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", speechTexture);
             currentAnimationGO.SetActive(true);
-            speechAnnotation = new SpeechAnnotation(_video, _rightHand, _rightController);
+            speechAnnotation = new SpeechAnnotation(_video, _rightHand, _rightController, _head);
             speechAnnotation.IsActive = true;
             speechAnnotation.setID(currentAnnotationID);
             currentAnnotationID++;
@@ -216,6 +223,30 @@ public class AnnotationManager {
         }
     }
 
+    public void IncrementDuration()
+    {
+        foreach (StaticAnnotation staticAnnotation in staticAnnotationList)
+        {
+            staticAnnotation.increaseDuration();
+        }
+    }
+
+    public void DisableDurationGO()
+    {
+        foreach (StaticAnnotation staticAnnotation in staticAnnotationList)
+        {
+            staticAnnotation.disableDurationGO();
+        }
+    }
+
+    public void DecreaseDuration()
+    {
+        foreach (StaticAnnotation staticAnnotation in staticAnnotationList)
+        {
+            staticAnnotation.decreaseDuration();
+        }
+    }
+
     public void DeleteAnnotation()
     {
         if (currentAnnotationSelected != -1)
@@ -227,9 +258,11 @@ public class AnnotationManager {
                     staticAnnotation.reset();
                     staticAnnotationList.Remove(staticAnnotation);
                     currentAnnotationSelected = -1;
+                    DrawAnnotationsOnTimeline();
                     return;
                 }
             }
+
         }
     }
 

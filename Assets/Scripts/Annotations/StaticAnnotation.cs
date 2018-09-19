@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-
+using System;
 public abstract class StaticAnnotation {
 
     protected int _id;
@@ -17,13 +17,14 @@ public abstract class StaticAnnotation {
     protected SteamVR_Controller.Device _rightController;
     protected GameObject _rightHand;
     protected CloudVideoPlayer _video;
+    protected GameObject _head;
 
     public enum Type
     {
         HIGHLIGHTPOINTS, SCRIBBLER, SPEECHTOTEXT, MARK
     }
 
-    public StaticAnnotation(CloudVideoPlayer video, GameObject rightHand, SteamVR_Controller.Device rightController)
+    public StaticAnnotation(CloudVideoPlayer video, GameObject rightHand, SteamVR_Controller.Device rightController, GameObject head)
     {
         _video = video;
         _rightHand = rightHand;
@@ -36,10 +37,12 @@ public abstract class StaticAnnotation {
         _editing = false;
 
         _annotationIdGO = GameObject.Instantiate(Resources.Load("Prefabs/AnnotationID")) as GameObject;
-        _annotationIdGO.transform.localScale = new Vector3(0.1f, 0.1f, 0.1f);
+        _annotationIdGO.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
         _annotationID = _annotationIdGO.GetComponent<TextMesh>();
-        _annotationID.text = "0";
+        _annotationID.text = Convert.ToString(_duration);
         _annotationIdGO.SetActive(false);
+
+        _head = head;
 
     }
 
@@ -94,6 +97,12 @@ public abstract class StaticAnnotation {
     public abstract void stop();
 
     public abstract int edit();
+
+    public abstract void increaseDuration();
+
+    public abstract void decreaseDuration();
+
+    public abstract void disableDurationGO();
 
     public abstract void reset();
 }

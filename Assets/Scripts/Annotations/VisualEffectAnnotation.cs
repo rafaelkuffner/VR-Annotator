@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using System;
 
 public class VisualEffectAnnotation : StaticAnnotation {
 
@@ -19,7 +20,7 @@ public class VisualEffectAnnotation : StaticAnnotation {
 
     public VisualEffectAnnotation(CloudVideoPlayer video, GameObject rightHand, SteamVR_Controller.Device rightController,
         GameObject head, GameObject rightPointer,Color c) :
-        base(video, rightHand, rightController)
+        base(video, rightHand, rightController, head)
     {
         effectColor = c;
         IsActive = false;
@@ -125,11 +126,45 @@ public class VisualEffectAnnotation : StaticAnnotation {
 
     public override int edit()
     {
-        if (_effectGO.activeSelf)
+       
+        if (_effectGO.activeSelf){
+            _annotationIdGO.SetActive(true);
+            Vector3 rot = _head.transform.forward;
+            rot.y = 0.0f;
+            _annotationIdGO.transform.rotation = Quaternion.LookRotation(rot);
+            _annotationIdGO.transform.position = new Vector3(_effectGO.transform.position.x, _effectGO.transform.position.y + 0.15f, _effectGO.transform.position.z);
             return _id;
+        }
         else
             return -1;
+
     }
+
+    public override void increaseDuration()
+    {
+        if (_effectGO.activeSelf) { 
+            _duration += 0.1f;
+            _annotationID.text = Convert.ToString(Convert.ToString(Math.Round(_duration, 1)));
+        }
+        
+    }
+
+    public override void decreaseDuration()
+    {
+
+        if (_effectGO.activeSelf && _duration >= 0) { 
+            _duration -= 0.1f;
+            _annotationID.text = Convert.ToString(Convert.ToString(Math.Round(_duration, 1)));
+        }
+    }
+
+    public override void disableDurationGO()
+    {
+        if(_annotationIdGO.activeSelf)
+            _annotationIdGO.SetActive(false);
+    }
+
+
 
     public override void reset()
     {

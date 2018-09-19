@@ -20,8 +20,8 @@ public class ScribblerAnnotation : StaticAnnotation {
     public bool triggerPressed;
     private Vector3 midPoint;
     
-    public ScribblerAnnotation(CloudVideoPlayer video, GameObject rightHand, SteamVR_Controller.Device rightController,Color c) :
-        base(video, rightHand, rightController)
+    public ScribblerAnnotation(CloudVideoPlayer video, GameObject rightHand, SteamVR_Controller.Device rightController,Color c, GameObject head) :
+        base(video, rightHand, rightController, head)
     {
         _myPoints = new List<PositionFrame>();
         IsActive = false;
@@ -85,8 +85,8 @@ public class ScribblerAnnotation : StaticAnnotation {
 
     public override void play()
     {
+        
         lineRenderer.positionCount = 0;
-        lineRendererGO.SetActive(true);
         int i =0;
         foreach (PositionFrame p in _myPoints)
         {
@@ -98,6 +98,18 @@ public class ScribblerAnnotation : StaticAnnotation {
             }
         
         }
+        lineRendererGO.SetActive(true);
+    }
+
+    public Vector3 getCenter()
+    {
+        Vector3 res = Vector3.zero;
+        foreach (PositionFrame p in _myPoints)
+        {
+            res += p.position;
+        }
+        res = res / _myPoints.Count;
+        return res;
     }
 
     public override void stop()
@@ -108,11 +120,14 @@ public class ScribblerAnnotation : StaticAnnotation {
 
     public override int edit()
     {
+      
         if (lineRendererGO.activeSelf) { 
-            _annotationID.text = Convert.ToString(_id);
-          //  _annotationIdGO.SetActive(true);
-            //Vector3 pos = lineRendererGO.transform.position;
-            //_annotationIdGO.transform.position = new Vector3(pos.x, pos.y + 0.3f, pos.z);
+            _annotationIdGO.SetActive(true);
+            Vector3 rot = _head.transform.forward;
+            rot.y = 0.0f;
+            _annotationIdGO.transform.rotation = Quaternion.LookRotation(rot);
+            Vector3 pos = getCenter();
+            _annotationIdGO.transform.position = new Vector3(pos.x, pos.y + 0.3f, pos.z);
             _editing = true;
 
             return _id;
@@ -121,6 +136,30 @@ public class ScribblerAnnotation : StaticAnnotation {
         return -1;
 
     }
+
+    public override void increaseDuration()
+    {
+        if (lineRendererGO.activeSelf) { 
+            _duration += 0.01f;
+            _annotationID.text = Convert.ToString(Convert.ToString(Math.Round(_duration, 1)));
+        }
+        //Debug.Log("duration = " + _duration);
+    }
+
+    public override void decreaseDuration()
+    {
+        if (lineRendererGO.activeSelf && _duration >= 0) { 
+            _duration -= 0.01f;
+            _annotationID.text = Convert.ToString(Convert.ToString(Math.Round(_duration, 1)));
+        }
+    }
+
+    public override void disableDurationGO()
+    {
+        if(_annotationIdGO.activeSelf)
+            _annotationIdGO.SetActive(false);
+    }
+
 
     public override void reset()
     {

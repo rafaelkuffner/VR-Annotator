@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-
+using System;
 public class MarkAnnotation : StaticAnnotation
 {
     public bool IsActive { get; set; }
@@ -11,11 +11,11 @@ public class MarkAnnotation : StaticAnnotation
     GameObject _rightPointer;
     GameObject _head;
     GameObject _markGO;
-    
-
+    private bool markNotPlaced;
+ 
     public MarkAnnotation(CloudVideoPlayer video, GameObject rightHand, SteamVR_Controller.Device rightController,
         GameObject head, GameObject rightPointer) :
-        base(video, rightHand, rightController) 
+        base(video, rightHand, rightController, head) 
     {
         IsActive = false;
         triggerPressed = false;
@@ -30,6 +30,8 @@ public class MarkAnnotation : StaticAnnotation
         markMenu.name = "MarkSelect";
         markMenu.SetActive(false);
         _markGO = null;
+        markNotPlaced = false;
+        
     }
 
     public override void annotate()
@@ -37,7 +39,8 @@ public class MarkAnnotation : StaticAnnotation
 
         if (IsActive)
         {
-            if (_markGO == null) {
+            if (_markGO == null)
+            {
 
                 markMenu.SetActive(true);
                 markMenu.transform.position = new Vector3(markMenu.transform.position.x, 1.4f, markMenu.transform.position.z);
@@ -52,7 +55,7 @@ public class MarkAnnotation : StaticAnnotation
                     {
                         b.Select();
 
-                        if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger))
+                        if (_rightController.GetPressDown(SteamVR_Controller.ButtonMask.Trigger))
                         {
                             if (b != null)
                             {
@@ -62,11 +65,10 @@ public class MarkAnnotation : StaticAnnotation
                                 _markGO = new GameObject();
                                 _markGO.transform.parent = _rightHand.transform;
                                 _markGO.transform.localPosition = new Vector3(0, 0, 0.1f);
-                                _markGO.transform.localRotation = Quaternion.identity; 
+                                _markGO.transform.localRotation = Quaternion.identity;
                                 _markGO.transform.localScale = new Vector3(0.05f, 0.05f, 0.05f);
                                 SpriteRenderer sr = _markGO.AddComponent<SpriteRenderer>();
                                 sr.sprite = (Sprite)Resources.Load(b.name, typeof(Sprite));
-                            
                             }
                         }
                     }
@@ -74,18 +76,17 @@ public class MarkAnnotation : StaticAnnotation
             }
             else
             {
-                if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger))
+                if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger) && !markNotPlaced)
                 {
                     _start = _video.getTime();
                     IsActive = false;
                     _hasBeenCreated = true;
                     _markGO.transform.parent = null;
+                    markNotPlaced = true;
 
                 }
-                        
-                
-
             }
+            
         }
     }
 
@@ -101,11 +102,48 @@ public class MarkAnnotation : StaticAnnotation
 
     public override int edit()
     {
-        if (_markGO.activeSelf)
+       
+        if (_markGO.activeSelf){
+             _annotationIdGO.SetActive(true);
+            _annotationIdGO.transform.position = new Vector3(_markGO.transform.position.x, _markGO.transform.position.y + 0.15f, _markGO.transform.position.z);
+
+            Vector3 rot = _head.transform.forward;
+            rot.y = 0.0f;
+            _annotationIdGO.transform.rotation = Quaternion.LookRotation(rot);
             return _id;
+         }
         else
             return -1;
     }
+
+
+
+    public override void increaseDuration()
+    {
+        if (_markGO.activeSelf) { 
+            _duration += 0.01f;
+            _annotationID.text = Convert.ToString(Math.Round(_duration, 1));
+        }
+
+       
+    }
+
+    public override void decreaseDuration()
+    {
+        if (_markGO.activeSelf && _duration >= 0) { 
+            _duration -= 0.01f;
+            _annotationID.text = Convert.ToString(Math.Round(_duration, 1));
+        }
+    }
+
+    public override void disableDurationGO()
+    {
+        if(_annotationIdGO)
+            _annotationIdGO.SetActive(false);
+    }
+
+
+
 
     public override void reset()
     {
