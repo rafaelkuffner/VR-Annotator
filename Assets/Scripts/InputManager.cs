@@ -96,6 +96,13 @@ public class InputManager : MonoBehaviour {
     }
 	// Use this for initialization
 
+	void setupMenu() {
+
+		GameObject menu = MonoBehaviour.Instantiate(Resources.Load("Prefabs/Menu")) as GameObject;
+		menu.transform.parent = _leftHand.transform;
+	
+	}
+
 	void Start () {
 
         _rightObj = _rightHand.GetComponent<SteamVR_TrackedObject>();
@@ -120,6 +127,8 @@ public class InputManager : MonoBehaviour {
         _representation = "Full";
         annotationManagerByVideo = new Dictionary<CloudVideoPlayer, AnnotationManager>();
 
+
+
 	}
 
     void EnableRightPointer()
@@ -140,7 +149,34 @@ public class InputManager : MonoBehaviour {
         _leftPointer.SetActive(false);
     }
 
-    void InputOpenMenus()
+
+	void InputOpenMenus() {
+
+		if (_rightController.GetPress(SteamVR_Controller.ButtonMask.Grip)) {
+			EnableRightPointer ();
+
+			Ray raycast = new Ray(_rightHand.transform.position, _rightHand.transform.forward);
+			//Debug.DrawRay (_rightHand.transform.position, _rightHand.transform.forward * 100f, Color.green, 20, true);
+			RaycastHit hit;
+			bool bHit = Physics.Raycast(raycast, out hit);
+			if (hit.transform != null) {
+				Debug.Log ("name = " + hit.transform.name);
+
+				hit.transform.position = new Vector3 (hit.transform.position.x - 0.0025f, hit.transform.position.y , hit.transform.position.z);
+			}
+			
+
+			/*
+			if (hit.transform != null && hit.transform.name == "ColorPalette") {
+				SelectColor (hit);
+
+			} else if (hit.transform != null && hit.transform.name == "scribble") {
+				
+			}*/
+		}
+	}
+
+    void InputOpenMenusOld()
     {
 
         if (_leftController.GetPressUp(SteamVR_Controller.ButtonMask.ApplicationMenu))
@@ -310,13 +346,13 @@ public class InputManager : MonoBehaviour {
         }
     }
 
-    void SelectColor()
+	void SelectColor(RaycastHit hit)
     {
-        Ray raycast = new Ray(_rightHand.transform.position, _rightHand.transform.forward);
-        RaycastHit hit;
-        bool bHit = Physics.Raycast(raycast, out hit);
-        if (hit.transform != null && hit.transform.name == "ColorPalette")
-        {
+        //Ray raycast = new Ray(_rightHand.transform.position, _rightHand.transform.forward);
+        //RaycastHit hit;
+        //bool bHit = Physics.Raycast(raycast, out hit);
+        //if (hit.transform != null && hit.transform.name == "ColorPalette")
+       // {
             Renderer rend = hit.transform.GetComponent<Renderer>();
             Texture2D tex = rend.material.mainTexture as Texture2D;
             Vector2 pixelUV = hit.textureCoord;
@@ -327,11 +363,11 @@ public class InputManager : MonoBehaviour {
             {
 				_rightPointer.GetComponent<MeshRenderer>().material.SetColor("_Color",p);
 				_pointerColor = p;
-                CloseAllMenus();
+               // CloseAllMenus();
                 DisableRightPointer();
-                _menu = MenuOpened.None;
+               // _menu = MenuOpened.None;
             }
-        }
+        //}
     }
 
     void SelectAnnotationType()
@@ -466,7 +502,7 @@ public class InputManager : MonoBehaviour {
         }
         else if (_menu == MenuOpened.ColorSelect)
         {
-            SelectColor();
+           // SelectColor();
         }
         else if (_menu == MenuOpened.AnnotationSelect)
         {
