@@ -58,7 +58,8 @@ public class ScribblerAnnotation : StaticAnnotation {
             {
                 PositionFrame p;
                 p.position = _rightHand.transform.position;
-                p.time = _video.getTime();
+                //p.time = _video.getTime();
+				p.time = Time.deltaTime;
                 
                 _myPoints.Add(p);
 

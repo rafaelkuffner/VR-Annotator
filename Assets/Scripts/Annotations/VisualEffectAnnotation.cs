@@ -86,7 +86,7 @@ public class VisualEffectAnnotation : StaticAnnotation {
             {
                 if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger))
                 {
-                    _start = _video.getTime();
+                    //_start = _video.getTime();
                     IsActive = false;
                     _hasBeenCreated = true;
                     GameObject o = GameObject.Find("Avatar");

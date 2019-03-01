@@ -78,7 +78,7 @@ public class MarkAnnotation : StaticAnnotation
             {
                 if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger) && !markNotPlaced)
                 {
-                    _start = _video.getTime();
+                    //_start = _video.getTime();
                     IsActive = false;
                     _hasBeenCreated = true;
                     _markGO.transform.parent = null;

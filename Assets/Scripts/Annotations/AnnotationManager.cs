@@ -279,7 +279,7 @@ public class AnnotationManager {
 		annotationMarks.transform.localRotation = Quaternion.identity;
 		foreach (StaticAnnotation sa in staticAnnotationList) 
 		{
-			float start = sa.getStart ();
+/*			float start = sa.getStart ();
 			float width = slider.GetComponent<RectTransform> ().rect.width;
 			float ratio = start / _video.getDuration ();
 			float xposition = (ratio * width) - (width / 2);
@@ -291,6 +291,7 @@ public class AnnotationManager {
 			r.transform.localRotation = Quaternion.identity;
 			r.transform.localPosition = new Vector3 (xposition, 0, 0);
 			r.transform.localScale = Vector3.one;
+*/
 		}
 	}
 
@@ -303,7 +304,7 @@ public class AnnotationManager {
 	// Update is called once per frame
 	public void Update () {
 
-		currentTime = _video.getTime();//+= Time.deltaTime;
+		//currentTime = _video.getTime();//+= Time.deltaTime;
         
         if (IsAnnotationActive) {
 
@@ -380,7 +381,7 @@ public class AnnotationManager {
         }
         IsAnnotationActive = bVisualEffect || bScribbler || bSpeechToText || bMark;
 
-       if (!IsAnnotationActive) {
+       /*if (!IsAnnotationActive) {
             foreach (StaticAnnotation staticAnnotation in staticAnnotationList)
             {
      
@@ -394,6 +395,6 @@ public class AnnotationManager {
                     staticAnnotation.stop();
                 }
             }
-        }
+        } */
 	}
 }
