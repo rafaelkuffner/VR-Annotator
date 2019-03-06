@@ -110,7 +110,7 @@ public class AnnotationManager {
     }
 
     
-    public void HandleVisualEffectsAnnotation(GameObject _head, GameObject _rightPointer)
+	public void HandleVisualEffectsAnnotation(GameObject _head, GameObject _rightPointer, string effectType)
     {
         if (!bVisualEffect)
         {
@@ -120,7 +120,7 @@ public class AnnotationManager {
 
             //currentAnimationGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", highlightPointsTexture);
             currentAnimationGO.SetActive(true);
-            visualEffectAnnotation = new VisualEffectAnnotation(_video, _rightHand, _rightController, _head, _rightPointer, inputManager.PointerColor);
+			visualEffectAnnotation = new VisualEffectAnnotation(_video, _rightHand, _rightController, _head, _rightPointer, inputManager.PointerColor, effectType);
             visualEffectAnnotation.IsActive = true;
             visualEffectAnnotation.setID(currentAnnotationID);
             currentAnnotationID++;

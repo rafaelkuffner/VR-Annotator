@@ -33,8 +33,9 @@ public class PopulateMarkMenu : MonoBehaviour {
                     img[i].sprite = p;
             }
             g.name = b; 
-            g.transform.SetParent(this.transform, false);
-            //g.GetComponentInChildren<Text>().text = b;
+			g.transform.localScale = new Vector3 (0.2f, 0.2f, 0.2f);
+			g.transform.SetParent(this.transform, false);
+			//g.GetComponentInChildren<Text>().text = b;
             count++;
             
         }

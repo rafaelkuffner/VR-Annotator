@@ -47,12 +47,12 @@ public class VRUIItem : MonoBehaviour
 
         }
 
-        boxCollider.size = rectTransform.sizeDelta;
+        //boxCollider.size = rectTransform.sizeDelta;
 
     }
 
     void Update()
     {
-        boxCollider.size = rectTransform.sizeDelta;
+        //boxCollider.size = rectTransform.sizeDelta;
     }
 }

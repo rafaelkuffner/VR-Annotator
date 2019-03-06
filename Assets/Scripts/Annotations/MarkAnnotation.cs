@@ -22,13 +22,17 @@ public class MarkAnnotation : StaticAnnotation
         _rightPointer = rightPointer;
         _head = head;
 
-        markMenu = MonoBehaviour.Instantiate(Resources.Load("Prefabs/MarkMenu")) as GameObject;
-        markMenu.transform.position = _head.transform.position + (_head.transform.forward * 2);
-        Vector3 rot = Camera.main.transform.forward;
-        rot.y = 0.0f;
-        markMenu.transform.rotation = Quaternion.LookRotation(rot);
+       // markMenu = MonoBehaviour.Instantiate(Resources.Load("Prefabs/MarkMenu")) as GameObject;
+
+		markMenu = GameObject.FindGameObjectWithTag ("MarkMenu");
+		Transform panel = markMenu.transform.Find ("Panel");
+		panel.gameObject.SetActive (true);
+       // markMenu.transform.position = _head.transform.position + (_head.transform.forward * 2);
+       // Vector3 rot = Camera.main.transform.forward;
+       // rot.y = 0.0f;
+      //  markMenu.transform.rotation = Quaternion.LookRotation(rot);
         markMenu.name = "MarkSelect";
-        markMenu.SetActive(false);
+       // markMenu.SetActive(false);
         _markGO = null;
         markNotPlaced = false;
         
@@ -43,7 +47,7 @@ public class MarkAnnotation : StaticAnnotation
             {
 
                 markMenu.SetActive(true);
-                markMenu.transform.position = new Vector3(markMenu.transform.position.x, 1.4f, markMenu.transform.position.z);
+               // markMenu.transform.position = new Vector3(markMenu.transform.position.x, 1.4f, markMenu.transform.position.z);
                 _rightPointer.SetActive(true);
                 Ray raycast = new Ray(_rightHand.transform.position, _rightHand.transform.forward);
                 RaycastHit hit;

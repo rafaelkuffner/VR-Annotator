@@ -16,10 +16,11 @@ public class VisualEffectAnnotation : StaticAnnotation {
     GameObject _rightPointer;
     GameObject _head;
     GameObject effectsMenu;
+	string _effectName;
 
 
     public VisualEffectAnnotation(CloudVideoPlayer video, GameObject rightHand, SteamVR_Controller.Device rightController,
-        GameObject head, GameObject rightPointer,Color c) :
+		GameObject head, GameObject rightPointer,Color c, string effectName) :
         base(video, rightHand, rightController, head)
     {
         effectColor = c;
@@ -27,14 +28,14 @@ public class VisualEffectAnnotation : StaticAnnotation {
         triggerPressed = false;
         _rightPointer = rightPointer;
         _head = head;
-
-        effectsMenu = MonoBehaviour.Instantiate(Resources.Load("Prefabs/EffectsMenu")) as GameObject;
-        effectsMenu.transform.position = _head.transform.position + (_head.transform.forward * 2);
-        Vector3 rot = Camera.main.transform.forward;
-        rot.y = 0.0f;
-        effectsMenu.transform.rotation = Quaternion.LookRotation(rot);
-        effectsMenu.name = "EffectSelect";
-        effectsMenu.SetActive(false);
+		_effectName = effectName;
+       // effectsMenu = MonoBehaviour.Instantiate(Resources.Load("Prefabs/EffectsMenu")) as GameObject;
+      //  effectsMenu.transform.position = _head.transform.position + (_head.transform.forward * 2);
+      //  Vector3 rot = Camera.main.transform.forward;
+      //  rot.y = 0.0f;
+       // effectsMenu.transform.rotation = Quaternion.LookRotation(rot);
+       // effectsMenu.name = "EffectSelect";
+       // effectsMenu.SetActive(false);
         _effectGO = null;
 
     }
@@ -48,39 +49,18 @@ public class VisualEffectAnnotation : StaticAnnotation {
             if (_effectGO == null)
             {
 
-                effectsMenu.SetActive(true);
-                effectsMenu.transform.position = new Vector3(effectsMenu.transform.position.x, 1.4f, effectsMenu.transform.position.z);
-                _rightPointer.SetActive(true);
-                Ray raycast = new Ray(_rightHand.transform.position, _rightHand.transform.forward);
-                RaycastHit hit;
-                bool bHit = Physics.Raycast(raycast, out hit);
-                if (hit.transform != null)
-                {
-                    Button b = hit.transform.gameObject.GetComponent<Button>();
-                    if (b != null)
-                    {
-                        b.Select();
+              
+				Debug.Log("EFFECT = " + _effectName);
+                //MonoBehaviour.Destroy(effectsMenu);
+                //_rightPointer.SetActive(false);
+				_effectGO = GameObject.Instantiate(Resources.Load("EffectPrefabs/"+_effectName)) as GameObject;
+                _effectGO.transform.parent = _rightHand.transform;
+                _effectGO.transform.localPosition = new Vector3(0, 0, 0.1f);
+                _effectGO.transform.localRotation = Quaternion.identity;
+                _effectGO.transform.localScale = Vector3.one;
+                Renderer r = _effectGO.GetComponent<Renderer>();
+                r.sharedMaterial.SetColor("_TintColor", effectColor);
 
-                        if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger))
-                        {
-                            if (b != null)
-                            {
-                                Debug.Log("EFFECT = " + b.name);
-                                MonoBehaviour.Destroy(effectsMenu);
-                                _rightPointer.SetActive(false);
-                                _effectGO = GameObject.Instantiate(Resources.Load("EffectPrefabs/"+b.name)) as GameObject;
-                                _effectGO.transform.parent = _rightHand.transform;
-                                _effectGO.transform.localPosition = new Vector3(0, 0, 0.1f);
-                                _effectGO.transform.localRotation = Quaternion.identity;
-                                _effectGO.transform.localScale = Vector3.one;
-                                Renderer r = _effectGO.GetComponent<Renderer>();
-                                r.sharedMaterial.SetColor("_TintColor", effectColor);
-
-
-                            }
-                        }
-                    }
-                }
             }
             else
             {

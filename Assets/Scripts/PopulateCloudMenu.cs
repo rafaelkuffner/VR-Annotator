@@ -23,7 +23,7 @@ public class PopulateCloudMenu : MonoBehaviour {
                 char[] sep = {'\\'};
                 string[] tokens = s.Split(sep);
                 string b = tokens[tokens.Length - 1];
-                g.transform.SetParent(this.transform,false);
+                g.transform.SetParent(this.transform, false);
                 g.GetComponentInChildren<Text>().text = b;
                 count++;
             }

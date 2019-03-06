@@ -158,59 +158,81 @@ public class InputManager : MonoBehaviour {
 			//Debug.DrawRay (_rightHand.transform.position, _rightHand.transform.forward * 100f, Color.green, 20, true);
 			RaycastHit hit;
 			bool bHit = Physics.Raycast(raycast, out hit);
-			if (hit.transform != null && !hit.transform.name.Equals("Cube") && !itemSelected) {
-				Debug.Log ("name = " + hit.transform.name);
-				hit.transform.position = new Vector3 (hit.transform.position.x - 0.05f, hit.transform.position.y , hit.transform.position.z);
+			if (hit.transform != null && !hit.transform.name.Equals("Cube") && hit.transform.name.Contains("annotation") && !itemSelected) {
+				Renderer renderer = hit.transform.gameObject.GetComponent<Renderer> ();
+				renderer.material.EnableKeyword ("_EMISSION");
+				renderer.material.SetColor ("_EmissionColor", Color.cyan);
+				//hit.transform.position = new Vector3 (hit.transform.position.x - 0.05f, hit.transform.position.y , hit.transform.position.z);
 				itemSelected = true;
 				currentItem = hit.transform;
-				DisableRightPointer ();
+
+				string AnnotationMenuItem = hit.transform.name;
+				string[] AnnotationMenuItemElements = AnnotationMenuItem.Split ('.');
+				if (AnnotationMenuItemElements.Length == 2) {
+					string annotationType = AnnotationMenuItemElements [1];
+					Debug.Log ("annotation Type = " + annotationType);
+					SelectAnnotationType (annotationType);
+					DisableRightPointer ();
+				}
+			}
+
+			else if(hit.transform != null && !hit.transform.name.Equals("Cube") && hit.transform.name.Contains("visualeffect") && !itemSelected) {
+				//hit.transform.position = new Vector3 (hit.transform.position.x - 0.05f, hit.transform.position.y , hit.transform.position.z);
+				Renderer renderer = hit.transform.gameObject.GetComponent<Renderer> ();
+				renderer.material.EnableKeyword ("_EMISSION");
+				renderer.material.SetColor ("_EmissionColor", Color.cyan);
+				itemSelected = true;
+				currentItem = hit.transform;
+
+				string visualEffectMenuItem = hit.transform.name;
+				string[] visualEffectMenuItemElements = visualEffectMenuItem.Split ('.');
+				if (visualEffectMenuItemElements.Length == 2) {
+					string visualEffect = visualEffectMenuItemElements [1];
+					Debug.Log ("visualEffect = " + visualEffect);
+					SelectVisualEffectType (visualEffect);
+					DisableRightPointer ();
+				}
+			}
+
+			else if(hit.transform != null && !hit.transform.name.Equals("Cube") && hit.transform.name.Contains("representation") && _video != null) {
+				string representationMenuItem = hit.transform.name;
+				string[] representationMenuItemElements = representationMenuItem.Split ('.');
+				if (representationMenuItemElements.Length == 2) {
+					string dataRepresentation = representationMenuItemElements [1];
+					Debug.Log ("dataRepresentation = " + dataRepresentation);
+					SetRepresentation  (dataRepresentation);
+					DisableRightPointer ();
+				}
 			}
 
 			else if (hit.transform != null && currentItem != null && hit.transform.name.Equals(currentItem.name) && itemSelected) {
-				currentItem.position = new Vector3 (currentItem.position.x + 0.05f, currentItem.position.y , currentItem.position.z);
+				//currentItem.position = new Vector3 (currentItem.position.x + 0.05f, currentItem.position.y , currentItem.position.z);
+				Renderer renderer = hit.transform.gameObject.GetComponent<Renderer> ();
+				renderer.material.SetColor ("_EmissionColor", Color.clear);
+
+				if (currentItem.name.Contains ("mark")) {
+					GameObject markMenu = GameObject.FindGameObjectWithTag ("MarkMenu");
+					Transform panel = markMenu.transform.Find ("Panel");
+					panel.gameObject.SetActive (false);
+				}
+
 				itemSelected = false;
 				currentItem = null;
 				DisableRightPointer ();
 			} 
 
+			if (hit.transform != null && hit.transform.name == "CloudMenu") {
+				Debug.Log ("Clicked Cloud Menu");
+				Debug.Log ("data = " + hit.transform.name);
+				SelectDataset (hit);
+				DisableRightPointer ();
+			}
+
 			if (hit.transform != null && hit.transform.name == "ColorPalette") {
 				SelectColor (hit);
-
+				DisableRightPointer ();
 			} 
 		}
-
-		/* if (currentItem != null && !_annotationManager.IsAnnotationActive) {
-			SelectAnnotationType (currentItem.transform.name);
-
-		} */
-
-		if (currentItem != null) {
-
-			string name = currentItem.name;
-			string[] tmp = name.Split ('.');
-			if (tmp.Length == 2) {
-				string menuType = tmp [0];
-
-				switch (menuType) 
-				{
-
-					case "annotation":
-						if (!_annotationManager.IsAnnotationActive)
-							SelectAnnotationType (tmp[1]);
-						break;
-
-					case "visualeffects":
-						Debug.Log ("visualeffects");
-						break;
-
-					case "representation":
-						SetRepresentation (tmp [1]);
-						break;
-				}
-
-			}
-		}
-			
 	}
 
     
@@ -245,52 +267,48 @@ public class InputManager : MonoBehaviour {
         }
 		_representation = representation;
     }
+	    
+	void SelectDataset(RaycastHit hit)
+	{
+		
+		Button b = hit.transform.gameObject.GetComponent<Button>();
+		if (b != null) { 
+			b.Select();
 
-    void SelectDataset()
-    {
-        Ray raycast = new Ray(_leftHand.transform.position, _leftHand.transform.forward);
-        RaycastHit hit;
-        bool bHit = Physics.Raycast(raycast, out hit);
-        if (hit.transform != null) {
-             Button b = hit.transform.gameObject.GetComponent<Button>();
-             if (b != null) { 
-                 b.Select();
+			if (_leftController.GetPress(SteamVR_Controller.ButtonMask.Trigger))
+			{
+				if (b.name == "PlaySpeed")
+				{
+					SetPlaybackSpeed(float.Parse(b.GetComponent<VRUIItem>().value));
+					return;
+				}
+				if(b.name == "Representation")
+				{
+					SetRepresentation(b.GetComponent<VRUIItem>().value);
+					return;
+				}
+				if (_video != null && _video.configFile == b.name)
+				{
+					return;
+				}
+				else if (_video != null && _video.configFile != b.name){
+					_video.Close();
+				}
 
-                 if (_leftController.GetPress(SteamVR_Controller.ButtonMask.Trigger))
-                 {
-                     if (b.name == "PlaySpeed")
-                     {
-                         SetPlaybackSpeed(float.Parse(b.GetComponent<VRUIItem>().value));
-                         return;
-                     }
-                     if(b.name == "Representation")
-                    {
-                        SetRepresentation(b.GetComponent<VRUIItem>().value);
-						return;
-                    }
-                     if (_video != null && _video.configFile == b.name)
-                     {
-                         return;
-                     }
-                     else if (_video != null && _video.configFile != b.name){
-                        _video.Close();
-                     }
-                     
-                     _video = new CloudVideoPlayer(b.name,this);
+				_video = new CloudVideoPlayer(b.name,this);
 
-                     /*if (!annotationManagerByVideo.ContainsKey(_video)) {
-                         _annotationManager = new AnnotationManager();
-                         _annotationManager.init();
-                         _annotationManager.SetCloudVideo(_video);
-                         annotationManagerByVideo.Add(_video, _annotationManager);
-                     }*/
-                     CloseAllMenus();
-                     DisableLeftPointer();
-                     _menu = MenuOpened.None;
-                 }
-             }
-        }
-    }
+				/*if (!annotationManagerByVideo.ContainsKey(_video)) {
+                     _annotationManager = new AnnotationManager();
+                     _annotationManager.init();
+                     _annotationManager.SetCloudVideo(_video);
+                     annotationManagerByVideo.Add(_video, _annotationManager);
+                 }*/
+				CloseAllMenus();
+				DisableLeftPointer();
+				_menu = MenuOpened.None;
+			}
+		}
+	}
 
 	void SelectColor(RaycastHit hit)
     {
@@ -300,12 +318,11 @@ public class InputManager : MonoBehaviour {
         pixelUV.x *= tex.width;
         pixelUV.y *= tex.height;
         Color p = tex.GetPixel((int)pixelUV.x, (int)pixelUV.y);
-        if (_rightController.GetPress(SteamVR_Controller.ButtonMask.Trigger))
-        {
+	//	if (_rightController.GetPress(SteamVR_Controller.ButtonMask.ApplicationMenu))
+      //  {
 			_rightPointer.GetComponent<MeshRenderer>().material.SetColor("_Color",p);
 			_pointerColor = p;
-            DisableRightPointer();
-        }
+      //  }
     }
 
     void SelectAnnotationType(string annotationType)
@@ -319,10 +336,6 @@ public class InputManager : MonoBehaviour {
 			case "voice":
 				_annotationManager.HandleSpeechAnnotation ();
 				break;
-
-			case "highlight": 
-				_annotationManager.HandleVisualEffectsAnnotation (_head, _rightPointer);
-				break;
 				
 			case "mark": 
 				_annotationManager.HandleMarkAnnotation(_head, _rightPointer);
@@ -333,6 +346,29 @@ public class InputManager : MonoBehaviour {
 				break;
 		}
     }
+
+	void SelectVisualEffectType(string effectType)
+	{
+		switch (effectType)
+		{
+		case "trail":
+			_annotationManager.HandleVisualEffectsAnnotation (_head, _rightPointer, effectType);
+			break;
+
+		case "particles":
+			_annotationManager.HandleVisualEffectsAnnotation (_head, _rightPointer, effectType);
+			break;
+
+		case "highlight": 
+			_annotationManager.HandleVisualEffectsAnnotation (_head, _rightPointer, effectType);
+			break;
+
+		default:
+			Debug.Log ("Invalida Annotation Type");
+			break;
+		}
+	}
+
 
     void EditAnnotations()
     {
@@ -421,24 +457,38 @@ public class InputManager : MonoBehaviour {
 
         }
 
-        if (_menu == MenuOpened.DatasetSelect)
-        {
-            SelectDataset();
-        }
-        else if (_menu == MenuOpened.ColorSelect)
-        {
-           // SelectColor();
-        }
-        else if (_menu == MenuOpened.AnnotationSelect)
-        {
-            _menuGO.transform.position = new Vector3(_rightHand.transform.position.x,
-                     _rightHand.transform.position.y + 0.15f, _rightHand.transform.position.z);
-            Vector3 rot = _head.transform.forward;
-            rot.y = 0.0f;
-            _menuGO.transform.rotation = Quaternion.LookRotation(rot);
-            //SelectAnnotationType();
-        }
-        else if (_menu == MenuOpened.AnnotationEdit)
+		if (currentItem != null) {
+
+			string name = currentItem.name;
+			string[] tmp = name.Split ('.');
+			if (tmp.Length == 2) {
+				string menuType = tmp [0];
+
+				switch (menuType) 
+				{
+
+				case "annotation":
+					if (!_annotationManager.IsAnnotationActive)
+						SelectAnnotationType (tmp[1]);
+					Debug.Log ("annotation");
+					break;
+
+				case "visualeffect":
+					if (!_annotationManager.IsAnnotationActive)
+						SelectVisualEffectType (tmp [1]);
+					Debug.Log ("visualeffects");
+					break;
+
+				default:
+					Debug.Log ("Invalid Annotation Type");
+					break;
+				}
+
+			}
+		}
+
+
+        if (_menu == MenuOpened.AnnotationEdit)
         {
             _menuGO.transform.position = new Vector3(_rightHand.transform.position.x,
                      _rightHand.transform.position.y + 0.15f, _rightHand.transform.position.z);
@@ -450,9 +500,9 @@ public class InputManager : MonoBehaviour {
 
   
         //if no menu is opened, annotation input, and playback control
-        else if (_menu == MenuOpened.None)
+        if (_menu == MenuOpened.None)
         {
-            if (!_controlDataset.activeSelf && _video != null)
+			if (!_controlDataset.activeSelf && _video != null)
             {
                 _controlDataset.SetActive(true);
             }
@@ -528,7 +578,7 @@ public class InputManager : MonoBehaviour {
             }
             */
 
-            if (_rightController.GetPressDown(SteamVR_Controller.ButtonMask.Trigger) && _annotationManager != null && !_annotationManager.IsAnnotationActive)
+         /*   if (_rightController.GetPressDown(SteamVR_Controller.ButtonMask.Trigger) && _annotationManager != null && !_annotationManager.IsAnnotationActive)
             {
                 EnableRightPointer();
                 if (_annotationManager != null)
@@ -537,7 +587,7 @@ public class InputManager : MonoBehaviour {
                     Debug.Log("Annotation Selected = " + _annotationManager.currentAnnotationSelected);
                 }
                
-            }
+            } */
             if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger) && _annotationManager != null && !_annotationManager.IsAnnotationActive)
             {
                 Ray raycast = new Ray(_rightHand.transform.position, _rightHand.transform.forward);

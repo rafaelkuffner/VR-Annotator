@@ -40,7 +40,7 @@ GameObject:
   - component: {fileID: 114830269584166504}
   - component: {fileID: 114851420803344690}
   - component: {fileID: 114228519028647606}
-  - component: {fileID: 65593266254113436}
+  - component: {fileID: 65693569785865328}
   m_Layer: 5
   m_Name: MarkButton
   m_TagString: Untagged
@@ -48,7 +48,7 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!65 &65593266254113436
+--- !u!65 &65693569785865328
 BoxCollider:
   m_ObjectHideFlags: 1
   m_PrefabParentObject: {fileID: 0}
@@ -186,7 +186,7 @@ RectTransform:
   m_PrefabInternal: {fileID: 100100000}
   m_GameObject: {fileID: 1719981848408976}
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 15.370534}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_Children:
   - {fileID: 224533689786922624}
