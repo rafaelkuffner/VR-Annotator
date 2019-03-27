@@ -221,7 +221,7 @@ public class InputManager : MonoBehaviour {
 				DisableRightPointer ();
 			} 
 
-			if (hit.transform != null && hit.transform.name == "CloudMenu") {
+			if (hit.transform != null && hit.transform.name.Contains(".ini")) {
 				Debug.Log ("Clicked Cloud Menu");
 				Debug.Log ("data = " + hit.transform.name);
 				SelectDataset (hit);
@@ -275,38 +275,35 @@ public class InputManager : MonoBehaviour {
 		if (b != null) { 
 			b.Select();
 
-			if (_leftController.GetPress(SteamVR_Controller.ButtonMask.Trigger))
+			if (b.name == "PlaySpeed")
 			{
-				if (b.name == "PlaySpeed")
-				{
-					SetPlaybackSpeed(float.Parse(b.GetComponent<VRUIItem>().value));
-					return;
-				}
-				if(b.name == "Representation")
-				{
-					SetRepresentation(b.GetComponent<VRUIItem>().value);
-					return;
-				}
-				if (_video != null && _video.configFile == b.name)
-				{
-					return;
-				}
-				else if (_video != null && _video.configFile != b.name){
-					_video.Close();
-				}
-
-				_video = new CloudVideoPlayer(b.name,this);
-
-				/*if (!annotationManagerByVideo.ContainsKey(_video)) {
-                     _annotationManager = new AnnotationManager();
-                     _annotationManager.init();
-                     _annotationManager.SetCloudVideo(_video);
-                     annotationManagerByVideo.Add(_video, _annotationManager);
-                 }*/
-				CloseAllMenus();
-				DisableLeftPointer();
-				_menu = MenuOpened.None;
+				SetPlaybackSpeed(float.Parse(b.GetComponent<VRUIItem>().value));
+				return;
 			}
+			if(b.name == "Representation")
+			{
+				SetRepresentation(b.GetComponent<VRUIItem>().value);
+				return;
+			}
+			if (_video != null && _video.configFile == b.name)
+			{
+				return;
+			}
+			else if (_video != null && _video.configFile != b.name){
+				_video.Close();
+			}
+
+			_video = new CloudVideoPlayer(b.name,this);
+
+			/* if (!annotationManagerByVideo.ContainsKey(_video)) {
+                    _annotationManager = new AnnotationManager();
+                    _annotationManager.init();
+                    _annotationManager.SetCloudVideo(_video);
+                    annotationManagerByVideo.Add(_video, _annotationManager);
+                }*/
+			CloseAllMenus();
+			DisableLeftPointer();
+			_menu = MenuOpened.None;
 		}
 	}
 
@@ -440,6 +437,9 @@ public class InputManager : MonoBehaviour {
             _annotationManager.SetHead(_head);
             _annotationManager.Update();
         }
+
+        if (_annotationManager.IsAnnotationActive)
+            DisableRightPointer();
 
         InputOpenMenus();
 

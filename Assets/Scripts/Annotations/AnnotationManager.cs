@@ -4,7 +4,8 @@ using UnityEngine;
 using UnityEngine.UI;
 using System;
 
-public class AnnotationManager {
+public class AnnotationManager
+ {
 
     private int currentAnnotationID;
     public bool IsAnnotationActive { get; set; }
