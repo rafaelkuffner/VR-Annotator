@@ -148,8 +148,86 @@ public class InputManager : MonoBehaviour {
         _leftPointer.SetActive(false);
     }
 
+    void OnCollisionExit(Collision collision)
+    {
+        Debug.Log("collision with = " + collision.transform.name);
+        if (collision.transform.name.Contains("annotation") && !itemSelected) 
+        {
+            Renderer renderer = collision.transform.gameObject.GetComponent<Renderer>();
+            renderer.material.EnableKeyword("_EMISSION");
+            renderer.material.SetColor("_EmissionColor", Color.cyan);
+            //hit.transform.position = new Vector3 (hit.transform.position.x - 0.05f, hit.transform.position.y , hit.transform.position.z);
+            itemSelected = true;
+            currentItem = collision.transform;
 
-	void InputOpenMenus() {
+            string AnnotationMenuItem = collision.transform.name;
+            string[] AnnotationMenuItemElements = AnnotationMenuItem.Split('.');
+            if (AnnotationMenuItemElements.Length == 2)
+            {
+                string annotationType = AnnotationMenuItemElements[1];
+                Debug.Log("annotation Type = " + annotationType);
+                SelectAnnotationType(annotationType);
+            }
+        }
+        else if (collision.transform.name.Contains("visualeffect") && !itemSelected)
+        {
+            //hit.transform.position = new Vector3 (hit.transform.position.x - 0.05f, hit.transform.position.y , hit.transform.position.z);
+            Renderer renderer = collision.transform.gameObject.GetComponent<Renderer>();
+            renderer.material.EnableKeyword("_EMISSION");
+            renderer.material.SetColor("_EmissionColor", Color.cyan);
+            itemSelected = true;
+            currentItem = collision.transform;
+
+            string visualEffectMenuItem = collision.transform.name;
+            string[] visualEffectMenuItemElements = visualEffectMenuItem.Split('.');
+            if (visualEffectMenuItemElements.Length == 2)
+            {
+                string visualEffect = visualEffectMenuItemElements[1];
+                Debug.Log("visualEffect = " + visualEffect);
+                SelectVisualEffectType(visualEffect);
+            }
+        }
+
+        else if (collision.transform.name.Contains("representation") && _video != null)
+        {
+            string representationMenuItem = collision.transform.name;
+            string[] representationMenuItemElements = representationMenuItem.Split('.');
+            if (representationMenuItemElements.Length == 2)
+            {
+                string dataRepresentation = representationMenuItemElements[1];
+                Debug.Log("dataRepresentation = " + dataRepresentation);
+                SetRepresentation(dataRepresentation);
+            }
+        }
+
+        else if (currentItem != null && collision.transform.name.Equals(currentItem.name) && itemSelected)
+        {
+            //currentItem.position = new Vector3 (currentItem.position.x + 0.05f, currentItem.position.y , currentItem.position.z);
+            Renderer renderer = collision.transform.gameObject.GetComponent<Renderer>();
+            renderer.material.SetColor("_EmissionColor", Color.clear);
+
+            if (currentItem.name.Contains("mark"))
+            {
+                GameObject markMenu = GameObject.FindGameObjectWithTag("MarkMenu");
+                Transform panel = markMenu.transform.Find("Panel");
+                panel.gameObject.SetActive(false);
+                DisableRightPointer();
+            }
+
+            itemSelected = false;
+            currentItem = null;
+        }
+
+       // StartCoroutine(WaitForSeconds(5));
+        
+    }
+
+    IEnumerator WaitForSeconds(int seconds)
+    {
+        yield return new WaitForSeconds(seconds);
+    }
+
+    /*void InputOpenMenus() {
 
 		if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.ApplicationMenu)) {
 			EnableRightPointer ();
@@ -233,7 +311,7 @@ public class InputManager : MonoBehaviour {
 				DisableRightPointer ();
 			} 
 		}
-	}
+	} */
 
     
     public void SetPlaybackSpeed(float speed)
@@ -334,12 +412,15 @@ public class InputManager : MonoBehaviour {
 				_annotationManager.HandleSpeechAnnotation ();
 				break;
 				
-			case "mark": 
-				_annotationManager.HandleMarkAnnotation(_head, _rightPointer);
+			case "mark":
+                GameObject markMenu = GameObject.FindGameObjectWithTag("MarkMenu");
+                Transform panel = markMenu.transform.Find("Panel");
+                panel.gameObject.SetActive(true);
+                _annotationManager.HandleMarkAnnotation(_head, _rightPointer);
 				break;
 
 			default:
-				Debug.Log ("Invalida Annotation Type");
+				Debug.Log ("Invalid Annotation Type");
 				break;
 		}
     }
@@ -361,7 +442,7 @@ public class InputManager : MonoBehaviour {
 			break;
 
 		default:
-			Debug.Log ("Invalida Annotation Type");
+			Debug.Log ("Invalid Annotation Type");
 			break;
 		}
 	}
@@ -438,10 +519,8 @@ public class InputManager : MonoBehaviour {
             _annotationManager.Update();
         }
 
-        if (_annotationManager.IsAnnotationActive)
-            DisableRightPointer();
 
-        InputOpenMenus();
+        //InputOpenMenus();
 
         if (_video != null )
         {

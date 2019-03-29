@@ -105,7 +105,7 @@ public class AnnotationManager
         currentTime = 0.0f;
         currentAnnotationID = 0;
 
-        inputManager = GameObject.Find("InputManager").GetComponent<InputManager>();
+        inputManager = GameObject.Find("Controller (right)").GetComponentInChildren<InputManager>();
         currentAnnotationSelected = -1;
         DrawAnnotationsOnTimeline();
     }
