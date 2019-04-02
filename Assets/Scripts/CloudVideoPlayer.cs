@@ -6,7 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 
 
-public class CloudVideoPlayer: MonoBehaviour{
+public class CloudVideoPlayer{
 
     [DllImport("RavatarPlugin")]
     private static extern IntPtr initLocal(string configLocation);
@@ -21,9 +21,9 @@ public class CloudVideoPlayer: MonoBehaviour{
     [DllImport("RavatarPlugin")]
     private static extern void resetStreams();
     [DllImport("RavatarPlugin")]
-    private static extern float streamDuration();
+    private static extern float getTime();
     [DllImport("RavatarPlugin")]
-    private static extern float streamTime();
+    private static extern float getDuration();
 
     private Dictionary<string, PointCloudDepth> _clouds;
     private Dictionary<string, GameObject> _cloudGameObjects;
@@ -50,9 +50,17 @@ public class CloudVideoPlayer: MonoBehaviour{
 
     float _speed;
     bool _playing;
+    bool _rendering; 
+
+    float _lastDelta;
 
     public CloudVideoPlayer(string path,InputManager manager)
     {
+        Application.targetFrameRate = 30;
+        _clouds = new Dictionary<string, PointCloudDepth>();
+        _cloudGameObjects = new Dictionary<string, GameObject>();
+        _colorData = new byte[BUFFER];
+        _depthData = new byte[DBUFFER];
         configFile = path;
         //Debug.Log("VideoObject loading from " + configFile);
         LoadSkeletonData();
@@ -61,22 +69,38 @@ public class CloudVideoPlayer: MonoBehaviour{
         processCalibrationMatrix(calib);
         _inputManager = manager;
         _playing = false;
-        _clouds = new Dictionary<string, PointCloudDepth>();
-        _cloudGameObjects = new Dictionary<string, GameObject>();
-        _colorData = new byte[BUFFER];
-        _depthData = new byte[DBUFFER];
         _speed = 1;
+        _lastDelta = 0;
+        _rendering = true;
     }
 
-    public void FixedUpdate()
+    public void setRendering(bool r)
     {
-        foreach (KeyValuePair<string, PointCloudDepth> p in _clouds)
-        {
-            if (getFrameAndNormal(p.Key, _colorData, _depthData, null))
+        _rendering = r;
+        if (!_rendering) hide();
+        else show();
+    }
+
+    public void Update()
+    {
+        float delta = Time.deltaTime;
+        _lastDelta += delta;
+
+        if (!_playing) return;
+
+
+        if (_lastDelta > 1.0f / 30.0f) { 
+            foreach (KeyValuePair<string, PointCloudDepth> p in _clouds)
             {
-                _clouds[p.Key].setPointsUncompressed(_colorData, _depthData);
-                _clouds[p.Key].show();
+                if (getFrameAndNormal(p.Key, _colorData, _depthData, null))
+                {
+                    _clouds[p.Key].setPointsUncompressed(_colorData, _depthData);
+                }
             }
+            show();
+            _lastDelta = 0;
+            if(_skeletonPlayer != null)
+                _skeletonPlayer.ReadNextLine();
         }
     }
     public void processCalibrationMatrix(string calibration)
@@ -129,14 +153,14 @@ public class CloudVideoPlayer: MonoBehaviour{
    
     }
 
-    public float getDuration()
+    public float getVideoDuration()
     {
-        return streamDuration();
+        return getDuration();
     }
 
-    public float getTime()
+    public float getVideoTime()
     {
-        return streamTime();
+        return getTime();
     }
 
     public void hide()
@@ -149,6 +173,7 @@ public class CloudVideoPlayer: MonoBehaviour{
 
     public void show()
     {
+        if (!_rendering) return;
         foreach (PointCloudDepth d in _clouds.Values)
         {
             d.show();
@@ -170,6 +195,7 @@ public class CloudVideoPlayer: MonoBehaviour{
     public void Play()
     {
         _playing = true;
+        show();
     }
 
     public void Pause()
@@ -184,7 +210,7 @@ public class CloudVideoPlayer: MonoBehaviour{
         _skeletonPlayer.Reset();
         _inputManager._playing = false;
         Debug.Log("Stop!");
-
+        hide();
     }
 
     public bool Playing()
@@ -195,6 +221,12 @@ public class CloudVideoPlayer: MonoBehaviour{
     {
         stopClouds();
         _skeletonPlayer.Close();
+        GameObject.Destroy(_skeletonPlayerGO);
+        foreach (GameObject go in _cloudGameObjects.Values)
+        {
+            GameObject.Destroy(go);
+        }
+
     }
 
     public void setSpeed(float speed)

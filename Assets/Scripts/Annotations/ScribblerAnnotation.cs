@@ -30,7 +30,7 @@ public class ScribblerAnnotation : StaticAnnotation {
  
         lineRendererGO = MonoBehaviour.Instantiate(Resources.Load("Prefabs/LineRendererPrefab")) as GameObject;
         lineRenderer = lineRendererGO.GetComponent<LineRenderer>();
-        lineRenderer.material = new Material(Shader.Find("Particles/Additive"));
+        lineRenderer.material = new Material(Shader.Find("Legacy Shaders/Particles/Additive"));
         lineRenderer.startColor = c;
         lineRenderer.endColor = c;//new Color(c.r / 0.2f, c.g / 0.2f, c.b / 0.2f);
         lineRenderer.positionCount = 0;
@@ -91,7 +91,7 @@ public class ScribblerAnnotation : StaticAnnotation {
         int i =0;
         foreach (PositionFrame p in _myPoints)
         {
-            if (p.time <= _video.getTime())
+            if (p.time <= _video.getVideoTime())
             {
                 lineRenderer.positionCount = i+1;
                 lineRenderer.SetPosition(i, p.position);

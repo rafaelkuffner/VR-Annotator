@@ -51,13 +51,11 @@ public class VisualEffectAnnotation : StaticAnnotation {
 
               
 				Debug.Log("EFFECT = " + _effectName);
-                //MonoBehaviour.Destroy(effectsMenu);
-                //_rightPointer.SetActive(false);
-				_effectGO = GameObject.Instantiate(Resources.Load("EffectPrefabs/"+_effectName)) as GameObject;
+         		_effectGO = GameObject.Instantiate(Resources.Load("EffectPrefabs/"+_effectName)) as GameObject;
                 _effectGO.transform.parent = _rightHand.transform;
                 _effectGO.transform.localPosition = new Vector3(0, 0, 0.1f);
                 _effectGO.transform.localRotation = Quaternion.identity;
-                _effectGO.transform.localScale = Vector3.one;
+         //       _effectGO.transform.localScale = Vector3.one;
                 Renderer r = _effectGO.GetComponent<Renderer>();
                 r.sharedMaterial.SetColor("_TintColor", effectColor);
 
@@ -76,7 +74,7 @@ public class VisualEffectAnnotation : StaticAnnotation {
                             _effectGO.transform.parent = joint;
                             _effectGO.transform.localPosition = Vector3.zero;
                             _effectGO.transform.localRotation = Quaternion.identity;
-                            _effectGO.transform.localScale = Vector3.one;
+                            //_effectGO.transform.localScale = Vector3.one;
                         }
                     }
                     else
@@ -84,7 +82,7 @@ public class VisualEffectAnnotation : StaticAnnotation {
                         _effectGO.transform.parent = null;
                         _effectGO.transform.localPosition = Vector3.zero;
                         _effectGO.transform.localRotation = Quaternion.identity;
-                        _effectGO.transform.localScale = Vector3.one;
+                        //_effectGO.transform.localScale = Vector3.one;
                     }
                 }
 

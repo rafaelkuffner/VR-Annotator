@@ -38,7 +38,6 @@ public class InputManager : MonoBehaviour {
     public bool _playing { get; set; }
 
     private GameObject _slider;
- 	private GameObject _controlDataset;
     private GameObject _menuGO;
     private AnnotationManager _annotationManager;
 
@@ -99,7 +98,6 @@ public class InputManager : MonoBehaviour {
     }
 	// Use this for initialization
 
-
 	void Start () {
 
         _rightObj = _rightHand.GetComponent<SteamVR_TrackedObject>();
@@ -109,18 +107,12 @@ public class InputManager : MonoBehaviour {
 
         _annotationManager = null;
 
-        //GameObject annotationManagerGO = GameObject.Find("AnnotationManager");
-        //_annotationManager = annotationManagerGO.GetComponent<AnnotationManager>();
-        //_annotationManager.SetRightHand(_rightHand);
-
         DisableRightPointer();
         DisableLeftPointer();
         _menu = MenuOpened.None;
         _video = null;
         _playSpeed = 1;
         _slider = GameObject.Find("Timeline");
-        _controlDataset = Instantiate(Resources.Load("Prefabs/ControlDataset")) as GameObject;
-        _controlDataset.SetActive(false);
         _representation = "Full";
         annotationManagerByVideo = new Dictionary<CloudVideoPlayer, AnnotationManager>();
 
@@ -148,15 +140,17 @@ public class InputManager : MonoBehaviour {
         _leftPointer.SetActive(false);
     }
 
-    void OnCollisionExit(Collision collision)
+    // select menu
+    void OnCollisionStay(Collision collision)
     {
         Debug.Log("collision with = " + collision.transform.name);
-        if (collision.transform.name.Contains("annotation") && !itemSelected) 
+        if (collision.transform.name.Contains("annotation") && !itemSelected && _rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger)) 
         {
+            //collision.transform.position = new Vector3 (collision.transform.position.x - 0.05f, collision.transform.position.y , collision.transform.position.z);
             Renderer renderer = collision.transform.gameObject.GetComponent<Renderer>();
             renderer.material.EnableKeyword("_EMISSION");
             renderer.material.SetColor("_EmissionColor", Color.cyan);
-            //hit.transform.position = new Vector3 (hit.transform.position.x - 0.05f, hit.transform.position.y , hit.transform.position.z);
+                
             itemSelected = true;
             currentItem = collision.transform;
 
@@ -168,8 +162,9 @@ public class InputManager : MonoBehaviour {
                 Debug.Log("annotation Type = " + annotationType);
                 SelectAnnotationType(annotationType);
             }
+    
         }
-        else if (collision.transform.name.Contains("visualeffect") && !itemSelected)
+        else if (collision.transform.name.Contains("visualeffect") && !itemSelected && _rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger))
         {
             //hit.transform.position = new Vector3 (hit.transform.position.x - 0.05f, hit.transform.position.y , hit.transform.position.z);
             Renderer renderer = collision.transform.gameObject.GetComponent<Renderer>();
@@ -188,7 +183,7 @@ public class InputManager : MonoBehaviour {
             }
         }
 
-        else if (collision.transform.name.Contains("representation") && _video != null)
+        else if (collision.transform.name.Contains("representation") && _video != null && _rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger))
         {
             string representationMenuItem = collision.transform.name;
             string[] representationMenuItemElements = representationMenuItem.Split('.');
@@ -200,7 +195,20 @@ public class InputManager : MonoBehaviour {
             }
         }
 
-        else if (currentItem != null && collision.transform.name.Equals(currentItem.name) && itemSelected)
+       
+        else if (collision.transform != null && collision.transform.name.Contains(".ini") && _rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger))
+        {
+            Debug.Log("Clicked Cloud Menu");
+            Debug.Log("data = " + collision.transform.name);
+            SelectDataset(collision.gameObject);
+            DisableRightPointer();
+        }
+    }
+
+    // deactivates the selected menu
+    private void OnCollisionEnter(Collision collision)
+    {
+        if (currentItem != null && collision.transform.name.Equals(currentItem.name) && itemSelected)
         {
             //currentItem.position = new Vector3 (currentItem.position.x + 0.05f, currentItem.position.y , currentItem.position.z);
             Renderer renderer = collision.transform.gameObject.GetComponent<Renderer>();
@@ -216,10 +224,9 @@ public class InputManager : MonoBehaviour {
 
             itemSelected = false;
             currentItem = null;
-        }
 
-       // StartCoroutine(WaitForSeconds(5));
-        
+            _annotationManager.IsAnnotationActive = false;
+        }
     }
 
     IEnumerator WaitForSeconds(int seconds)
@@ -227,93 +234,6 @@ public class InputManager : MonoBehaviour {
         yield return new WaitForSeconds(seconds);
     }
 
-    /*void InputOpenMenus() {
-
-		if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.ApplicationMenu)) {
-			EnableRightPointer ();
-
-			Ray raycast = new Ray(_rightHand.transform.position, _rightHand.transform.forward);
-			//Debug.DrawRay (_rightHand.transform.position, _rightHand.transform.forward * 100f, Color.green, 20, true);
-			RaycastHit hit;
-			bool bHit = Physics.Raycast(raycast, out hit);
-			if (hit.transform != null && !hit.transform.name.Equals("Cube") && hit.transform.name.Contains("annotation") && !itemSelected) {
-				Renderer renderer = hit.transform.gameObject.GetComponent<Renderer> ();
-				renderer.material.EnableKeyword ("_EMISSION");
-				renderer.material.SetColor ("_EmissionColor", Color.cyan);
-				//hit.transform.position = new Vector3 (hit.transform.position.x - 0.05f, hit.transform.position.y , hit.transform.position.z);
-				itemSelected = true;
-				currentItem = hit.transform;
-
-				string AnnotationMenuItem = hit.transform.name;
-				string[] AnnotationMenuItemElements = AnnotationMenuItem.Split ('.');
-				if (AnnotationMenuItemElements.Length == 2) {
-					string annotationType = AnnotationMenuItemElements [1];
-					Debug.Log ("annotation Type = " + annotationType);
-					SelectAnnotationType (annotationType);
-					DisableRightPointer ();
-				}
-			}
-
-			else if(hit.transform != null && !hit.transform.name.Equals("Cube") && hit.transform.name.Contains("visualeffect") && !itemSelected) {
-				//hit.transform.position = new Vector3 (hit.transform.position.x - 0.05f, hit.transform.position.y , hit.transform.position.z);
-				Renderer renderer = hit.transform.gameObject.GetComponent<Renderer> ();
-				renderer.material.EnableKeyword ("_EMISSION");
-				renderer.material.SetColor ("_EmissionColor", Color.cyan);
-				itemSelected = true;
-				currentItem = hit.transform;
-
-				string visualEffectMenuItem = hit.transform.name;
-				string[] visualEffectMenuItemElements = visualEffectMenuItem.Split ('.');
-				if (visualEffectMenuItemElements.Length == 2) {
-					string visualEffect = visualEffectMenuItemElements [1];
-					Debug.Log ("visualEffect = " + visualEffect);
-					SelectVisualEffectType (visualEffect);
-					DisableRightPointer ();
-				}
-			}
-
-			else if(hit.transform != null && !hit.transform.name.Equals("Cube") && hit.transform.name.Contains("representation") && _video != null) {
-				string representationMenuItem = hit.transform.name;
-				string[] representationMenuItemElements = representationMenuItem.Split ('.');
-				if (representationMenuItemElements.Length == 2) {
-					string dataRepresentation = representationMenuItemElements [1];
-					Debug.Log ("dataRepresentation = " + dataRepresentation);
-					SetRepresentation  (dataRepresentation);
-					DisableRightPointer ();
-				}
-			}
-
-			else if (hit.transform != null && currentItem != null && hit.transform.name.Equals(currentItem.name) && itemSelected) {
-				//currentItem.position = new Vector3 (currentItem.position.x + 0.05f, currentItem.position.y , currentItem.position.z);
-				Renderer renderer = hit.transform.gameObject.GetComponent<Renderer> ();
-				renderer.material.SetColor ("_EmissionColor", Color.clear);
-
-				if (currentItem.name.Contains ("mark")) {
-					GameObject markMenu = GameObject.FindGameObjectWithTag ("MarkMenu");
-					Transform panel = markMenu.transform.Find ("Panel");
-					panel.gameObject.SetActive (false);
-				}
-
-				itemSelected = false;
-				currentItem = null;
-				DisableRightPointer ();
-			} 
-
-			if (hit.transform != null && hit.transform.name.Contains(".ini")) {
-				Debug.Log ("Clicked Cloud Menu");
-				Debug.Log ("data = " + hit.transform.name);
-				SelectDataset (hit);
-				DisableRightPointer ();
-			}
-
-			if (hit.transform != null && hit.transform.name == "ColorPalette") {
-				SelectColor (hit);
-				DisableRightPointer ();
-			} 
-		}
-	} */
-
-    
     public void SetPlaybackSpeed(float speed)
     {
         _playSpeed = speed;
@@ -327,62 +247,31 @@ public class InputManager : MonoBehaviour {
         switch (representation)
         {
             case "full":
-                _video.show();
+                _video.setRendering(true);
                 if (o != null) o.GetComponent<SkeletonRepresentation>().show();
                 break;
             case "skeleton":
-                _video.hide();
+                _video.setRendering(false);
                 if (o != null) o.GetComponent<SkeletonRepresentation>().show();
                 break;
             case "cloud":
-                _video.show();
+                _video.setRendering(true);
                 if (o != null) o.GetComponent<SkeletonRepresentation>().hide();
                 break;
             case "None":
-                _video.hide();
+                _video.setRendering(false);
                 if (o != null) o.GetComponent<SkeletonRepresentation>().hide();
                 break;
         }
 		_representation = representation;
     }
 	    
-	void SelectDataset(RaycastHit hit)
+	void SelectDataset(GameObject hit)
 	{
-		
-		Button b = hit.transform.gameObject.GetComponent<Button>();
-		if (b != null) { 
-			b.Select();
 
-			if (b.name == "PlaySpeed")
-			{
-				SetPlaybackSpeed(float.Parse(b.GetComponent<VRUIItem>().value));
-				return;
-			}
-			if(b.name == "Representation")
-			{
-				SetRepresentation(b.GetComponent<VRUIItem>().value);
-				return;
-			}
-			if (_video != null && _video.configFile == b.name)
-			{
-				return;
-			}
-			else if (_video != null && _video.configFile != b.name){
-				_video.Close();
-			}
+        if (_video != null) _video.Close();
+		_video = new CloudVideoPlayer(hit.name,this);
 
-			_video = new CloudVideoPlayer(b.name,this);
-
-			/* if (!annotationManagerByVideo.ContainsKey(_video)) {
-                    _annotationManager = new AnnotationManager();
-                    _annotationManager.init();
-                    _annotationManager.SetCloudVideo(_video);
-                    annotationManagerByVideo.Add(_video, _annotationManager);
-                }*/
-			CloseAllMenus();
-			DisableLeftPointer();
-			_menu = MenuOpened.None;
-		}
 	}
 
 	void SelectColor(RaycastHit hit)
@@ -501,12 +390,17 @@ public class InputManager : MonoBehaviour {
         if (o != null) Destroy(o);
         DisableLeftPointer();
         DisableRightPointer();
-        _controlDataset.SetActive(false);
         return;
     }
 
-	// Update is called once per frame
-	void Update () {
+    private void FixedUpdate()
+    {
+      
+    }
+
+
+    // Update is called once per frame
+    void Update () {
 
         if (_rightObj.index == SteamVR_TrackedObject.EIndex.None || _leftObj.index == SteamVR_TrackedObject.EIndex.None) return;
         _rightController = SteamVR_Controller.Input((int)_rightObj.index);
@@ -519,21 +413,22 @@ public class InputManager : MonoBehaviour {
             _annotationManager.Update();
         }
 
-
         //InputOpenMenus();
 
         if (_video != null )
         {
-            if (_video.getTime() != 0 && _video.getDuration() != 0) 
+            if (_video.getVideoTime() != 0 && _video.getVideoDuration() != 0) 
             {
-                float ratio = _video.getTime() / _video.getDuration();
+                float ratio = _video.getVideoTime() / _video.getVideoDuration();
 
                 //_slider.SetActive(true);
                 _slider.GetComponentInChildren<Slider>().value = ratio;
                 //_slider.transform.position = new Vector3(0, 2.5f, 0);
               //  _slider.transform.forward =  Camera.main.transform.forward;
             }
-
+            
+            _video.Update();
+           
         }
 
 		if (currentItem != null) {
@@ -581,30 +476,17 @@ public class InputManager : MonoBehaviour {
         //if no menu is opened, annotation input, and playback control
         if (_menu == MenuOpened.None)
         {
-			if (!_controlDataset.activeSelf && _video != null)
-            {
-                _controlDataset.SetActive(true);
-            }
-            else
-            {
-                _controlDataset.transform.position = new Vector3(_leftHand.transform.position.x,
-                    _leftHand.transform.position.y + 0.15f, _leftHand.transform.position.z);
-                Vector3 rot = Camera.main.transform.forward;
-                rot.y = 0.0f;
-                _controlDataset.transform.rotation = Quaternion.LookRotation(rot);
-            } 
-
-            if (_leftController.GetPressUp(SteamVR_Controller.ButtonMask.Touchpad))
+		
+            if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Touchpad))
             {
                 //Vector2 touchpad = _leftController.GetAxis(EVRButtonId.k_EButton_Axis0);
-                Vector2 touchpad = _leftController.GetAxis(EVRButtonId.k_EButton_SteamVR_Touchpad);
+                Vector2 touchpad = _rightController.GetAxis(EVRButtonId.k_EButton_SteamVR_Touchpad);
 
                 if (touchpad.y > 0.7f)
                 {
                     print("Pressed Stop");
                     _video.Stop();
                     _playing = false;
-                    _controlDataset.SetActive(false);
                     _annotationManager.DisableAnnotations();
                     _annotationManager.currentTime = 0.0f;
                     _annotationManager.IsPlayingVideo = false;

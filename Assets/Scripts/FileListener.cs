@@ -55,6 +55,8 @@ public class FileListener : MonoBehaviour {
             file.Dispose();
             file = null;
         }
+        GameObject skele = GameObject.Find("Avatar");
+       if(skele != null) GameObject.Destroy(skele);
     }
 
     public bool HasSkeleton()
@@ -63,10 +65,9 @@ public class FileListener : MonoBehaviour {
     }
 
     //chamar em um dos eventos. Ter um frame num, se for diferente muda, senão faz nada.
-    public void ReadNextLine(int framen)
+    public void ReadNextLine()
     {
-        if (framen <= file.CurrentLine) return;
-
+        if (file == null) return;
         string stringToParse = file.ReadLine();
         if (stringToParse == null || stringToParse == "")
         {

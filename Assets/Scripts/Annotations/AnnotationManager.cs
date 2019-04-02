@@ -381,6 +381,7 @@ public class AnnotationManager
             }
         }
         IsAnnotationActive = bVisualEffect || bScribbler || bSpeechToText || bMark;
+        
 
        /*if (!IsAnnotationActive) {
             foreach (StaticAnnotation staticAnnotation in staticAnnotationList)

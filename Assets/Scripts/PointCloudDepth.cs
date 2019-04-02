@@ -22,13 +22,15 @@ public class PointCloudDepth : MonoBehaviour
     public int medianFilterSize = 2;
     public bool calculateNormals = true;
 
+    bool _hide;
+
     void Start()
     {
         _width = 512;
         _height = 424;
         _texScale = 1;
         _objs = null;
-
+        _hide = false;
 
         _mat = Resources.Load("Materials/cloudmatDepth") as Material;
 
@@ -112,14 +114,18 @@ public class PointCloudDepth : MonoBehaviour
 
     public void hide()
     {
-        foreach (GameObject a in _objs)
-            a.SetActive(false);
+        _hide = true;
+        MeshRenderer[] renderers = GetComponentsInChildren<MeshRenderer>();
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            MeshRenderer mr = renderers[i];
+            mr.material.SetInt("_hide", _hide ? 1 : 0);
+        }
     }
 
     public void show()
     {
-        foreach (GameObject a in _objs)
-            a.SetActive(true);
+        _hide = false;
     }
 
     public void setPoints(byte[] colorBytes, byte[] depthBytes, bool compressed, int sizec, int scale)
@@ -160,7 +166,7 @@ public class PointCloudDepth : MonoBehaviour
             mr.material.SetFloat("_sigmaS", sigmaS);
             mr.material.SetInt("_SizeFilter", medianFilterSize);
             mr.material.SetInt("_calculateNormals", calculateNormals? 1:0);
-
+            mr.material.SetInt("_hide", _hide ? 1 : 0);
         }
 
     }
@@ -184,6 +190,8 @@ public class PointCloudDepth : MonoBehaviour
             mr.material.SetFloat("_sigmaS", sigmaS);
             mr.material.SetInt("_SizeFilter", medianFilterSize);
             mr.material.SetInt("_calculateNormals", calculateNormals ? 1 : 0);
+            mr.material.SetInt("_hide", _hide ? 1 : 0);
+
         }
 
     }

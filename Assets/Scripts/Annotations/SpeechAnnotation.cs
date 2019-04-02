@@ -23,7 +23,7 @@ public class SpeechAnnotation : StaticAnnotation
 
     public override void annotate()
     {
-        Debug.Log("annotate method scribbler");
+        Debug.Log("annotate method speech");
 
         if (!IsActive)
             audioSource = null;
@@ -34,7 +34,7 @@ public class SpeechAnnotation : StaticAnnotation
             {
                 triggerPressed = true;
                 Debug.Log("start = " + _start);
-                _start = _video.getTime();
+                _start = _video.getVideoTime();
                 audioSource.clip = Microphone.Start("2- HTC Vive", true, 120, 44100); // lenght???
                 _recordingTime = 0;
             }
@@ -63,7 +63,7 @@ public class SpeechAnnotation : StaticAnnotation
 
     public override void play()
     {
-        if (!audioSource.isPlaying && AnnotationManager.RoughlyEqual(_start, _video.getTime()))
+        if (!audioSource.isPlaying && AnnotationManager.RoughlyEqual(_start, _video.getVideoTime()))
         {
             audioVisualCueGO.SetActive(true);
             audioSource.Play();
