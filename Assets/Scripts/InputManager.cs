@@ -41,6 +41,8 @@ public class InputManager : MonoBehaviour {
     private GameObject _menuGO;
     private AnnotationManager _annotationManager;
 
+    private Sprite buttonSelected;
+
     private Dictionary<CloudVideoPlayer, AnnotationManager> annotationManagerByVideo;
 
     public enum MenuOpened
@@ -104,7 +106,7 @@ public class InputManager : MonoBehaviour {
         _leftObj = _leftHand.GetComponent<SteamVR_TrackedObject>();
         setupRightPointer();
         setupLeftPointer();
-
+         
         _annotationManager = null;
 
         DisableRightPointer();
@@ -119,8 +121,9 @@ public class InputManager : MonoBehaviour {
 		_annotationManager = new AnnotationManager();
 		_annotationManager.init ();
 		itemSelected = false;
+        buttonSelected = Resources.Load("Textures/white") as Sprite;
 
-	}
+    }
 
     void EnableRightPointer()
     {
@@ -201,7 +204,6 @@ public class InputManager : MonoBehaviour {
             Debug.Log("Clicked Cloud Menu");
             Debug.Log("data = " + collision.transform.name);
             SelectDataset(collision.gameObject);
-            DisableRightPointer();
         }
     }
 
@@ -271,22 +273,27 @@ public class InputManager : MonoBehaviour {
 
         if (_video != null) _video.Close();
 		_video = new CloudVideoPlayer(hit.name,this);
+        Button button = hit.transform.gameObject.GetComponent<Button>();
+        Image img = button.GetComponent<Image>();
+        img.sprite = buttonSelected;
+        _annotationManager.SetCloudVideo(_video);
 
 	}
 
 	void SelectColor(RaycastHit hit)
     {
+        //EnableRightPointer();
         Renderer rend = hit.transform.GetComponent<Renderer>();
         Texture2D tex = rend.material.mainTexture as Texture2D;
         Vector2 pixelUV = hit.textureCoord;
         pixelUV.x *= tex.width;
         pixelUV.y *= tex.height;
         Color p = tex.GetPixel((int)pixelUV.x, (int)pixelUV.y);
-	//	if (_rightController.GetPress(SteamVR_Controller.ButtonMask.ApplicationMenu))
-      //  {
+		//if (_rightController.GetPress(SteamVR_Controller.ButtonMask.Trigger))
+       // {
 			_rightPointer.GetComponent<MeshRenderer>().material.SetColor("_Color",p);
 			_pointerColor = p;
-      //  }
+       // }
     }
 
     void SelectAnnotationType(string annotationType)
@@ -399,6 +406,123 @@ public class InputManager : MonoBehaviour {
     }
 
 
+    void HandleAnnotations()
+    {
+        // continue to add annotations while a menu item is still selected
+        if (currentItem != null)
+        {
+
+            string name = currentItem.name;
+            string[] tmp = name.Split('.');
+            if (tmp.Length == 2)
+            {
+                string menuType = tmp[0];
+
+                switch (menuType)
+                {
+
+                    case "annotation":
+                        if (!_annotationManager.IsAnnotationActive)
+                            SelectAnnotationType(tmp[1]);
+                        Debug.Log("annotation");
+                        break;
+
+                    case "visualeffect":
+                        if (!_annotationManager.IsAnnotationActive)
+                            SelectVisualEffectType(tmp[1]);
+                        Debug.Log("visualeffects");
+                        break;
+
+                    default:
+                        Debug.Log("Invalid Annotation Type");
+                        break;
+                }
+            }
+        }
+    }
+
+    void HandleTeleport()
+    {
+        if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger) && currentItem == null)
+        {
+            _rightPointer.SetActive(true);
+            Ray raycast = new Ray(_rightHand.transform.position, _rightHand.transform.forward);
+            RaycastHit hit;
+            bool bHit = Physics.Raycast(raycast, out hit);
+            if (bHit && hit.collider.gameObject.name.Equals("VRPlane"))
+            {
+                Debug.Log("colide with = " + hit.collider.gameObject.name);
+                GameObject camera = GameObject.Find("[CameraRig]");
+                camera.transform.position = new Vector3(hit.point.x, camera.transform.position.y, hit.point.z);
+            }
+            _rightPointer.SetActive(false);
+        }
+    }
+
+    void HandleVideoPlayback()
+    {
+        if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Touchpad) && _video != null)
+        {
+            Vector2 touchpad = _rightController.GetAxis(EVRButtonId.k_EButton_SteamVR_Touchpad);
+
+            if (touchpad.y > 0.7f)
+            {
+                print("Pressed Stop");
+                _video.Stop();
+                _playing = false;
+                _annotationManager.DisableAnnotations();
+                _annotationManager.currentTime = 0.0f;
+                _annotationManager.IsPlayingVideo = false;
+                GameObject o = GameObject.Find("Avatar");
+                if (o != null) o.GetComponent<SkeletonRepresentation>().hide();
+            }
+            else if (touchpad.y < -0.7f)
+            {
+                print("Pressed Play");
+                _playing = !_playing;
+
+                if (_playing)
+                {
+                    _video.Play();
+                    SetRepresentation(_representation);
+                    _annotationManager.IsPlayingVideo = true;
+                }
+                else
+                {
+                    _video.Pause();
+                    _annotationManager.IsPlayingVideo = false;
+                }
+            }
+            else if (touchpad.x > 0.7f)
+            {
+                print("Pressed Foward");
+                _video.Skip5Sec();
+
+            }
+            else if (touchpad.x < -0.7f)
+            {
+                print("Pressed Backward");
+                _video.Back5Sec();
+            }
+        }
+
+        if (_video != null && _video.getVideoTime() != 0 && _video.getVideoDuration() != 0)
+        {
+            float ratio = _video.getVideoTime() / _video.getVideoDuration();
+
+            //_slider.SetActive(true);
+            _slider.GetComponentInChildren<Slider>().value = ratio;
+            //_slider.transform.position = new Vector3(0, 2.5f, 0);
+            //  _slider.transform.forward =  Camera.main.transform.forward;
+
+        }
+
+        if(_video != null)
+        {
+            _video.Update();
+        }
+    }
+
     // Update is called once per frame
     void Update () {
 
@@ -409,58 +533,10 @@ public class InputManager : MonoBehaviour {
         if (_annotationManager != null) { 
             _annotationManager.SetRightHand(_rightHand);
             _annotationManager.SetRightHandController(_rightController);
+            _annotationManager.SetRightPointer(_rightPointer);
             _annotationManager.SetHead(_head);
             _annotationManager.Update();
         }
-
-        //InputOpenMenus();
-
-        if (_video != null )
-        {
-            if (_video.getVideoTime() != 0 && _video.getVideoDuration() != 0) 
-            {
-                float ratio = _video.getVideoTime() / _video.getVideoDuration();
-
-                //_slider.SetActive(true);
-                _slider.GetComponentInChildren<Slider>().value = ratio;
-                //_slider.transform.position = new Vector3(0, 2.5f, 0);
-              //  _slider.transform.forward =  Camera.main.transform.forward;
-            }
-            
-            _video.Update();
-           
-        }
-
-		if (currentItem != null) {
-
-			string name = currentItem.name;
-			string[] tmp = name.Split ('.');
-			if (tmp.Length == 2) {
-				string menuType = tmp [0];
-
-				switch (menuType) 
-				{
-
-				case "annotation":
-					if (!_annotationManager.IsAnnotationActive)
-						SelectAnnotationType (tmp[1]);
-					Debug.Log ("annotation");
-					break;
-
-				case "visualeffect":
-					if (!_annotationManager.IsAnnotationActive)
-						SelectVisualEffectType (tmp [1]);
-					Debug.Log ("visualeffects");
-					break;
-
-				default:
-					Debug.Log ("Invalid Annotation Type");
-					break;
-				}
-
-			}
-		}
-
 
         if (_menu == MenuOpened.AnnotationEdit)
         {
@@ -472,98 +548,27 @@ public class InputManager : MonoBehaviour {
             EditAnnotations();
         }
 
-  
-        //if no menu is opened, annotation input, and playback control
-        if (_menu == MenuOpened.None)
+        // handle Annotations
+        HandleAnnotations();
+
+        // handle video playback
+        HandleVideoPlayback();
+
+        // handle Teleport
+        HandleTeleport();    
+       
+
+        /*   if (_rightController.GetPressDown(SteamVR_Controller.ButtonMask.Trigger) && _annotationManager != null && !_annotationManager.IsAnnotationActive)
         {
-		
-            if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Touchpad))
+            EnableRightPointer();
+            if (_annotationManager != null)
             {
-                //Vector2 touchpad = _leftController.GetAxis(EVRButtonId.k_EButton_Axis0);
-                Vector2 touchpad = _rightController.GetAxis(EVRButtonId.k_EButton_SteamVR_Touchpad);
-
-                if (touchpad.y > 0.7f)
-                {
-                    print("Pressed Stop");
-                    _video.Stop();
-                    _playing = false;
-                    _annotationManager.DisableAnnotations();
-                    _annotationManager.currentTime = 0.0f;
-                    _annotationManager.IsPlayingVideo = false;
-					GameObject o = GameObject.Find("Avatar");
-					if (o != null) o.GetComponent<SkeletonRepresentation>().hide();
-         
-
-                }
-
-                else if (touchpad.y < -0.7f)
-                {
-                    print("Pressed Play");
-                    _playing = !_playing;
-
-                    if (_playing) {
-                        _video.Play();
-						SetRepresentation (_representation);
-                        _annotationManager.IsPlayingVideo = true;
-                    }
-                    else { 
-                        _video.Pause();
-                        _annotationManager.IsPlayingVideo = false;
-                    }
-                }
-          
-                else if (touchpad.x > 0.7f)
-                {
-                    print("Pressed Foward");
-                    _video.Skip5Sec();
-                    
-                }
-
-                else if (touchpad.x < -0.7f)
-                {
-                    print("Pressed Backward");
-                    _video.Back5Sec();
-                }
+                _annotationManager.EditAnnotation();
+                Debug.Log("Annotation Selected = " + _annotationManager.currentAnnotationSelected);
             }
-
-
-          /*  //Got controllers, now handle input.
-            if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger))
-            {
-                _playing = !_playing;
-             
-                if (_playing)
-                    _video.Play();
-                else
-                    _video.Pause();
-            }
-            */
-
-         /*   if (_rightController.GetPressDown(SteamVR_Controller.ButtonMask.Trigger) && _annotationManager != null && !_annotationManager.IsAnnotationActive)
-            {
-                EnableRightPointer();
-                if (_annotationManager != null)
-                {
-                    _annotationManager.EditAnnotation();
-                    Debug.Log("Annotation Selected = " + _annotationManager.currentAnnotationSelected);
-                }
                
-            } */
-            if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger) && _annotationManager != null && !_annotationManager.IsAnnotationActive)
-            {
-                Ray raycast = new Ray(_rightHand.transform.position, _rightHand.transform.forward);
-                RaycastHit hit;
-                bool bHit = Physics.Raycast(raycast, out hit);
-                if (bHit && hit.collider.gameObject.name.Equals("VRPlane"))
-                {
-                    Debug.Log("colide with = " + hit.collider.gameObject.name);
-                    GameObject camera = GameObject.Find("[CameraRig]");
-                    camera.transform.position = new Vector3(hit.point.x, camera.transform.position.y, hit.point.z);
-                }
-                DisableRightPointer();
-            }
-        }
-	}
-
-
+        } */ 
+    }
 }
+
+

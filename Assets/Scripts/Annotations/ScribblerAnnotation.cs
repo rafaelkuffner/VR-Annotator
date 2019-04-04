@@ -34,7 +34,6 @@ public class ScribblerAnnotation : StaticAnnotation {
         lineRenderer.startColor = c;
         lineRenderer.endColor = c;//new Color(c.r / 0.2f, c.g / 0.2f, c.b / 0.2f);
         lineRenderer.positionCount = 0;
-        
     }
 
     public override void annotate()
@@ -50,7 +49,7 @@ public class ScribblerAnnotation : StaticAnnotation {
             if (_rightController.GetPressDown(SteamVR_Controller.ButtonMask.Trigger))
             { 
                 triggerPressed = true;
-               // _start = Time.time;
+                _start = Time.time;
                 Debug.Log("start = " + _start);
             }
             
@@ -58,7 +57,7 @@ public class ScribblerAnnotation : StaticAnnotation {
             {
                 PositionFrame p;
                 p.position = _rightHand.transform.position;
-                //p.time = _video.getTime();
+                p.time = _video.getVideoTime();
 				p.time = Time.deltaTime;
                 
                 _myPoints.Add(p);
@@ -76,7 +75,7 @@ public class ScribblerAnnotation : StaticAnnotation {
                 triggerPressed = false;
                 IsActive = false;
                 _start = _myPoints[0].time;
-                //_duration = Time.deltaTime - _start;
+                _duration = Time.deltaTime - _start;
                 _hasBeenCreated = true;
                 Debug.Log("duration = " + _duration);
             }

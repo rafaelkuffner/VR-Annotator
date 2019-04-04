@@ -29,18 +29,9 @@ public class VisualEffectAnnotation : StaticAnnotation {
         _rightPointer = rightPointer;
         _head = head;
 		_effectName = effectName;
-       // effectsMenu = MonoBehaviour.Instantiate(Resources.Load("Prefabs/EffectsMenu")) as GameObject;
-      //  effectsMenu.transform.position = _head.transform.position + (_head.transform.forward * 2);
-      //  Vector3 rot = Camera.main.transform.forward;
-      //  rot.y = 0.0f;
-       // effectsMenu.transform.rotation = Quaternion.LookRotation(rot);
-       // effectsMenu.name = "EffectSelect";
-       // effectsMenu.SetActive(false);
         _effectGO = null;
 
     }
-
- 
 
     public override void annotate()
     {
@@ -48,8 +39,6 @@ public class VisualEffectAnnotation : StaticAnnotation {
         {
             if (_effectGO == null)
             {
-
-              
 				Debug.Log("EFFECT = " + _effectName);
          		_effectGO = GameObject.Instantiate(Resources.Load("EffectPrefabs/"+_effectName)) as GameObject;
                 _effectGO.transform.parent = _rightHand.transform;
@@ -64,7 +53,7 @@ public class VisualEffectAnnotation : StaticAnnotation {
             {
                 if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger))
                 {
-                    //_start = _video.getTime();
+                    _start = _video.getVideoTime();
                     IsActive = false;
                     _hasBeenCreated = true;
                     GameObject o = GameObject.Find("Avatar");

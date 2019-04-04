@@ -37,6 +37,7 @@ public class AnnotationManager
     private GameObject _rightHand;
     private CloudVideoPlayer _video;
     private GameObject _head;
+    private GameObject _rightPointer;
 
     private ScribblerAnnotation scribblerAnnotation;
     private VisualEffectAnnotation visualEffectAnnotation;
@@ -64,6 +65,11 @@ public class AnnotationManager
     public void SetRightHandController(SteamVR_Controller.Device rightController)
     {
         _rightController = rightController;
+    }
+
+    public void SetRightPointer(GameObject rightPointer)
+    {
+        _rightPointer = rightPointer;
     }
 
     public void SetHead(GameObject head)
@@ -280,9 +286,9 @@ public class AnnotationManager
 		annotationMarks.transform.localRotation = Quaternion.identity;
 		foreach (StaticAnnotation sa in staticAnnotationList) 
 		{
-/*			float start = sa.getStart ();
+			float start = sa.getStart ();
 			float width = slider.GetComponent<RectTransform> ().rect.width;
-			float ratio = start / _video.getDuration ();
+			float ratio = start / _video.getVideoDuration();
 			float xposition = (ratio * width) - (width / 2);
 			Sprite p =(Sprite) Resources.Load("Textures/Annotation", typeof(Sprite));
 			GameObject r = new GameObject ("Annotation");
@@ -292,7 +298,7 @@ public class AnnotationManager
 			r.transform.localRotation = Quaternion.identity;
 			r.transform.localPosition = new Vector3 (xposition, 0, 0);
 			r.transform.localScale = Vector3.one;
-*/
+
 		}
 	}
 
@@ -376,6 +382,7 @@ public class AnnotationManager
                         staticAnnotationList.Add(markAnnotation);
                         DrawAnnotationsOnTimeline();
                     }
+                    _rightPointer.SetActive(false);
                     bMark = false;
                 }
             }

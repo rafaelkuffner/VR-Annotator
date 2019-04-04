@@ -21,18 +21,6 @@ public class MarkAnnotation : StaticAnnotation
         triggerPressed = false;
         _rightPointer = rightPointer;
         _head = head;
-
-       // markMenu = MonoBehaviour.Instantiate(Resources.Load("Prefabs/MarkMenu")) as GameObject;
-
-		 //   markMenu = GameObject.FindGameObjectWithTag ("MarkMenu");
-          //  Transform panel = markMenu.transform.Find ("Panel");
-          //  panel.gameObject.SetActive(true);
-        // markMenu.transform.position = _head.transform.position + (_head.transform.forward * 2);
-       // Vector3 rot = Camera.main.transform.forward;
-       // rot.y = 0.0f;
-      //  markMenu.transform.rotation = Quaternion.LookRotation(rot);
-       // markMenu.name = "MarkSelect";
-       // markMenu.SetActive(false);
         _markGO = null;
         markNotPlaced = false;
         
@@ -46,8 +34,6 @@ public class MarkAnnotation : StaticAnnotation
             if (_markGO == null)
             {
 
-              //  markMenu.SetActive(true);
-               // markMenu.transform.position = new Vector3(markMenu.transform.position.x, 1.4f, markMenu.transform.position.z);
                 _rightPointer.SetActive(true);
                 Ray raycast = new Ray(_rightHand.transform.position, _rightHand.transform.forward);
                 RaycastHit hit;
@@ -64,8 +50,7 @@ public class MarkAnnotation : StaticAnnotation
                             if (b != null)
                             {
                                 Debug.Log("MARK = " + b.name);
-                                //MonoBehaviour.Destroy(markMenu);
-                                //_rightPointer.SetActive(false);
+                                _rightPointer.SetActive(false);
                                 _markGO = new GameObject();
                                 _markGO.transform.parent = _rightHand.transform;
                                 _markGO.transform.localPosition = new Vector3(0, 0, 0.1f);
@@ -82,7 +67,7 @@ public class MarkAnnotation : StaticAnnotation
             {
                 if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger) && !markNotPlaced)
                 {
-                    //_start = _video.getTime();
+                    _start = _video.getVideoTime();
                     IsActive = false;
                     _hasBeenCreated = true;
                     _markGO.transform.parent = null;
@@ -90,7 +75,6 @@ public class MarkAnnotation : StaticAnnotation
 
                 }
             }
-            
         }
     }
 
@@ -145,8 +129,6 @@ public class MarkAnnotation : StaticAnnotation
         if(_annotationIdGO)
             _annotationIdGO.SetActive(false);
     }
-
-
 
 
     public override void reset()
