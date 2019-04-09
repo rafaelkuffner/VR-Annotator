@@ -18,19 +18,11 @@ public class AnnotationManager
     private bool bSpeechToText;
     private bool bMark;
 
-    public GameObject speechToTextGO;
     private Material speechMaterial;
-
-    public GameObject scribblerGO;
     private Material scribblerMaterial;
-
-    public GameObject visualEffectsGO;
     private Material visualEffectsMaterial;
-
-    public GameObject markGO;
     private Material markMaterial;
 
-    public GameObject deleteGO;
     private Texture deleteTexture;
 
     private SteamVR_Controller.Device _rightController;
@@ -387,7 +379,7 @@ public class AnnotationManager
                 }
             }
         }
-        IsAnnotationActive = bVisualEffect || bScribbler || bSpeechToText || bMark;
+       IsAnnotationActive = bVisualEffect || bScribbler || bSpeechToText || bMark;
         
 
        /*if (!IsAnnotationActive) {

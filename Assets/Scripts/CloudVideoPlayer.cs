@@ -67,6 +67,7 @@ public class CloudVideoPlayer{
         IntPtr output = initLocal(path);
         string calib = Marshal.PtrToStringAnsi(output);
         processCalibrationMatrix(calib);
+        resetStreams();
         _inputManager = manager;
         _playing = false;
         _speed = 1;

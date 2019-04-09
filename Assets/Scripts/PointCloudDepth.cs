@@ -126,6 +126,12 @@ public class PointCloudDepth : MonoBehaviour
     public void show()
     {
         _hide = false;
+        MeshRenderer[] renderers = GetComponentsInChildren<MeshRenderer>();
+        for (int i = 0; i < renderers.Length; i++)
+        {
+            MeshRenderer mr = renderers[i];
+            mr.material.SetInt("_hide", _hide ? 1 : 0);
+        }
     }
 
     public void setPoints(byte[] colorBytes, byte[] depthBytes, bool compressed, int sizec, int scale)

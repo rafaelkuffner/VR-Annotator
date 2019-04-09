@@ -74,7 +74,8 @@ public class ScribblerAnnotation : StaticAnnotation {
                
                 triggerPressed = false;
                 IsActive = false;
-                _start = _myPoints[0].time;
+                if(_myPoints.Count > 0)
+                    _start = _myPoints[0].time;
                 _duration = Time.deltaTime - _start;
                 _hasBeenCreated = true;
                 Debug.Log("duration = " + _duration);
