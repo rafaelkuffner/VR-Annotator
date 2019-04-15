@@ -49,7 +49,7 @@ public class ScribblerAnnotation : StaticAnnotation {
             if (_rightController.GetPressDown(SteamVR_Controller.ButtonMask.Trigger))
             { 
                 triggerPressed = true;
-                _start = Time.time;
+                _start = _video.getVideoTime(); 
                 Debug.Log("start = " + _start);
             }
             
@@ -58,7 +58,7 @@ public class ScribblerAnnotation : StaticAnnotation {
                 PositionFrame p;
                 p.position = _rightHand.transform.position;
                 p.time = _video.getVideoTime();
-				p.time = Time.deltaTime;
+				//p.time = Time.deltaTime;
                 
                 _myPoints.Add(p);
 
@@ -76,7 +76,7 @@ public class ScribblerAnnotation : StaticAnnotation {
                 IsActive = false;
                 if(_myPoints.Count > 0)
                     _start = _myPoints[0].time;
-                _duration = Time.deltaTime - _start;
+                //_duration = Time.deltaTime - _start + 1f;
                 _hasBeenCreated = true;
                 Debug.Log("duration = " + _duration);
             }

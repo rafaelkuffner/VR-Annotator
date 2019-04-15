@@ -303,7 +303,8 @@ public class AnnotationManager
 	// Update is called once per frame
 	public void Update () {
 
-		//currentTime = _video.getTime();//+= Time.deltaTime;
+        if(_video != null)
+		    currentTime = _video.getVideoTime();//+= Time.deltaTime;
         
         if (IsAnnotationActive) {
 
@@ -382,7 +383,7 @@ public class AnnotationManager
        IsAnnotationActive = bVisualEffect || bScribbler || bSpeechToText || bMark;
         
 
-       /*if (!IsAnnotationActive) {
+       if (!IsAnnotationActive) {
             foreach (StaticAnnotation staticAnnotation in staticAnnotationList)
             {
      
@@ -396,6 +397,6 @@ public class AnnotationManager
                     staticAnnotation.stop();
                 }
             }
-        } */
+        }
 	}
 }

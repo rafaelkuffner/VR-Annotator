@@ -59,19 +59,21 @@ public class VisualEffectAnnotation : StaticAnnotation {
                     GameObject o = GameObject.Find("Avatar");
                     if (o != null) { 
                         Transform joint = o.GetComponent<SkeletonRepresentation>().getTBR().findNearestBone(_rightHand.transform.position);
-                        if (joint != null) { 
+                        if (joint != null) {
+                            Vector3 scale = _effectGO.transform.localScale;
                             _effectGO.transform.parent = joint;
                             _effectGO.transform.localPosition = Vector3.zero;
                             _effectGO.transform.localRotation = Quaternion.identity;
-                            //_effectGO.transform.localScale = Vector3.one;
+                            _effectGO.transform.localScale = scale;
                         }
                     }
                     else
                     {
+                        Vector3 scale = _effectGO.transform.localScale;
                         _effectGO.transform.parent = null;
                         _effectGO.transform.localPosition = Vector3.zero;
                         _effectGO.transform.localRotation = Quaternion.identity;
-                        //_effectGO.transform.localScale = Vector3.one;
+                        _effectGO.transform.localScale = scale;
                     }
                 }
 

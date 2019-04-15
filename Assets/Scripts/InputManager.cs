@@ -55,6 +55,7 @@ public class InputManager : MonoBehaviour {
 
 	private bool itemSelected;
 	private Transform currentItem;
+    private bool isChoosingColor;
 
     void setupRightPointer()
     {
@@ -208,7 +209,9 @@ public class InputManager : MonoBehaviour {
 
             else if (collision.transform.name.Contains("ColorPalette") && _rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger))
             {
+                isChoosingColor = true;
                 SelectColor(collision);
+                
             }
         }
 
@@ -218,6 +221,7 @@ public class InputManager : MonoBehaviour {
             Debug.Log("data = " + collision.transform.name);
             SelectDataset(collision.gameObject);
         }
+        isChoosingColor = false;
     }
 
     // deactivates the selected menu
@@ -301,26 +305,23 @@ public class InputManager : MonoBehaviour {
 
 	void SelectColor(Collision collision)
     {
-        foreach (ContactPoint cp in collision.contacts)
-        {
-            RaycastHit hit = new RaycastHit();
-            float rayLenght = 0.1f;
-            Ray ray = new Ray(cp.point - cp.normal * rayLenght * 5f, cp.normal);
-            Debug.DrawRay(ray.origin, ray.direction);
-            if (cp.otherCollider.Raycast(ray, out hit, rayLenght))
-            {
-                Renderer rend = cp.otherCollider.transform.GetComponent<Renderer>();
-                Texture2D tex = rend.material.mainTexture as Texture2D;
-                Color c = tex.GetPixelBilinear(hit.textureCoord.x, hit.textureCoord.y);
-                //Vector2 pixelUV = hit.textureCoord;
-                Debug.Log("color = " + c.ToString());
-                //pixelUV.x *= tex.width;
-                //pixelUV.y *= tex.height;
-                //Color p = tex.GetPixel((int)pixelUV.x, (int)pixelUV.y);
-                this.transform.GetComponent<Renderer>().material.SetColor("_Color", c);
-                _pointerColor = c;
-            }
-        }
+        if (currentItem != null) return; // so it doesnt annotate at the same time is picking a color
+
+        Ray raycast = new Ray(transform.position, _rightPointer.transform.forward);
+        //Debug.DrawRay (_rightHand.transform.position, _rightHand.transform.forward * 100f, Color.green, 20, true);
+        RaycastHit hit;
+        bool bHit = Physics.Raycast(raycast, out hit);
+        Renderer rend = hit.transform.GetComponent<Renderer>();
+        Texture2D tex = rend.material.mainTexture as Texture2D;
+        Vector2 pixelUV = hit.textureCoord;
+        pixelUV.x *= tex.width;
+        pixelUV.y *= tex.height;
+        Color p = tex.GetPixel((int)pixelUV.x, (int)pixelUV.y);
+        //if (_rightController.GetPress(SteamVR_Controller.ButtonMask.Trigger))
+        // {
+        this.transform.GetComponent<Renderer>().material.SetColor("_Color", p);
+        _rightPointer.GetComponent<MeshRenderer>().material.SetColor("_Color", p);
+        _pointerColor = p;  
     }
 
     void SelectAnnotationType(string annotationType)
@@ -427,16 +428,10 @@ public class InputManager : MonoBehaviour {
         return;
     }
 
-    private void FixedUpdate()
-    {
-      
-    }
-
-
     void HandleAnnotations()
     {
         // continue to add annotations while a menu item is still selected
-        if (currentItem != null)
+        if (currentItem != null && !isChoosingColor)
         {
 
             string name = currentItem.name;
@@ -483,7 +478,6 @@ public class InputManager : MonoBehaviour {
             {
                 DisableRightPointer();
             }
-            print("pressing");
 
         }else if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger) && currentItem == null)
         {
@@ -506,9 +500,9 @@ public class InputManager : MonoBehaviour {
 
     void HandleVideoPlayback()
     {
-        if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Touchpad) && _video != null)
+        if (_leftController.GetPressUp(SteamVR_Controller.ButtonMask.Touchpad) && _video != null)
         {
-            Vector2 touchpad = _rightController.GetAxis(EVRButtonId.k_EButton_SteamVR_Touchpad);
+            Vector2 touchpad = _leftController.GetAxis(EVRButtonId.k_EButton_SteamVR_Touchpad);
 
             if (touchpad.y > 0.7f)
             {
@@ -568,6 +562,19 @@ public class InputManager : MonoBehaviour {
         }
     }
 
+    void HandleCancelAnnotation()
+    {
+        if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Touchpad) && _video != null && _annotationManager.staticAnnotationList.Count > 0)
+        {
+            int numberOfAnnotations = _annotationManager.staticAnnotationList.Count;
+            StaticAnnotation lastAnnotation = _annotationManager.staticAnnotationList[numberOfAnnotations - 1];
+
+            _annotationManager.staticAnnotationList.Remove(lastAnnotation);
+
+            Debug.Log("pressed cancel annotation");
+        }
+    }
+
     // Update is called once per frame
     void Update () {
 
@@ -600,7 +607,10 @@ public class InputManager : MonoBehaviour {
         HandleVideoPlayback();
 
         // handle Teleport
-        HandleTeleport();    
+        HandleTeleport();
+
+        // handle Cancel Annotation
+        HandleCancelAnnotation();
 
     }
 
