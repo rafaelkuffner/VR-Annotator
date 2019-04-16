@@ -17,6 +17,7 @@ public class VisualEffectAnnotation : StaticAnnotation {
     GameObject _head;
     GameObject effectsMenu;
 	string _effectName;
+    public bool annotationAdded;
 
 
     public VisualEffectAnnotation(CloudVideoPlayer video, GameObject rightHand, SteamVR_Controller.Device rightController,
@@ -30,7 +31,7 @@ public class VisualEffectAnnotation : StaticAnnotation {
         _head = head;
 		_effectName = effectName;
         _effectGO = null;
-
+       
     }
 
     public override void annotate()
@@ -46,7 +47,7 @@ public class VisualEffectAnnotation : StaticAnnotation {
                 _effectGO.transform.localRotation = Quaternion.identity;
          //       _effectGO.transform.localScale = Vector3.one;
                 Renderer r = _effectGO.GetComponent<Renderer>();
-                r.sharedMaterial.SetColor("_TintColor", effectColor);
+                r.material.SetColor("_TintColor", effectColor);
 
             }
             else
@@ -55,7 +56,6 @@ public class VisualEffectAnnotation : StaticAnnotation {
                 {
                     _start = _video.getVideoTime();
                     IsActive = false;
-                    _hasBeenCreated = true;
                     GameObject o = GameObject.Find("Avatar");
                     if (o != null) { 
                         Transform joint = o.GetComponent<SkeletonRepresentation>().getTBR().findNearestBone(_rightHand.transform.position);
@@ -65,6 +65,13 @@ public class VisualEffectAnnotation : StaticAnnotation {
                             _effectGO.transform.localPosition = Vector3.zero;
                             _effectGO.transform.localRotation = Quaternion.identity;
                             _effectGO.transform.localScale = scale;
+                            _hasBeenCreated = true;
+                        }
+                        else
+                        {
+                            GameObject.Destroy(_effectGO);
+                            _hasBeenCreated = false;
+
                         }
                     }
                     else

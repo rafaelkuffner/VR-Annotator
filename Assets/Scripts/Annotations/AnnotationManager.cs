@@ -5,7 +5,7 @@ using UnityEngine.UI;
 using System;
 
 public class AnnotationManager
- {
+{
 
     private int currentAnnotationID;
     public bool IsAnnotationActive { get; set; }
@@ -17,6 +17,7 @@ public class AnnotationManager
     private bool bScribbler;
     private bool bSpeechToText;
     private bool bMark;
+    private bool bFloor;
 
     private Material speechMaterial;
     private Material scribblerMaterial;
@@ -35,6 +36,7 @@ public class AnnotationManager
     private VisualEffectAnnotation visualEffectAnnotation;
     private MarkAnnotation markAnnotation;
     private SpeechAnnotation speechAnnotation;
+    private FloorAnnotation floorAnnotation;
 
     private InputManager inputManager;
 
@@ -70,7 +72,8 @@ public class AnnotationManager
     }
 
     // Use this for initialization
-	public void init () {
+    public void init()
+    {
 
         IsAnnotationActive = false;
 
@@ -108,8 +111,8 @@ public class AnnotationManager
         DrawAnnotationsOnTimeline();
     }
 
-    
-	public void HandleVisualEffectsAnnotation(GameObject _head, GameObject _rightPointer, string effectType)
+
+    public void HandleVisualEffectsAnnotation(GameObject _head, GameObject _rightPointer, string effectType)
     {
         if (!bVisualEffect)
         {
@@ -119,7 +122,7 @@ public class AnnotationManager
 
             //currentAnimationGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", highlightPointsTexture);
             currentAnimationGO.SetActive(true);
-			visualEffectAnnotation = new VisualEffectAnnotation(_video, _rightHand, _rightController, _head, _rightPointer, inputManager.PointerColor, effectType);
+            visualEffectAnnotation = new VisualEffectAnnotation(_video, _rightHand, _rightController, _head, _rightPointer, inputManager.PointerColor, effectType);
             visualEffectAnnotation.IsActive = true;
             visualEffectAnnotation.setID(currentAnnotationID);
             currentAnnotationID++;
@@ -137,9 +140,9 @@ public class AnnotationManager
             renderers[1].sharedMaterial = scribblerMaterial;
             //currentAnimationGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", scribblerTexture);
             currentAnimationGO.SetActive(true);
-            scribblerAnnotation = new ScribblerAnnotation(_video, _rightHand, _rightController,inputManager.PointerColor, _head);
+            scribblerAnnotation = new ScribblerAnnotation(_video, _rightHand, _rightController, inputManager.PointerColor, _head);
             scribblerAnnotation.IsActive = true;
-            scribblerAnnotation.setID(currentAnnotationID);           
+            scribblerAnnotation.setID(currentAnnotationID);
             currentAnnotationID++;
             bScribbler = true;
         }
@@ -151,9 +154,9 @@ public class AnnotationManager
         {
 
             Renderer[] renderers = currentAnimationGO.GetComponentsInChildren<Renderer>();
-            renderers[0].sharedMaterial =  markMaterial;
+            renderers[0].sharedMaterial = markMaterial;
             renderers[1].sharedMaterial = markMaterial;
-            
+
             //currentAnimationGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", markTexture);
             currentAnimationGO.SetActive(true);
             markAnnotation = new MarkAnnotation(_video, _rightHand, _rightController, _head, _rightPointer);
@@ -172,7 +175,7 @@ public class AnnotationManager
             Renderer[] renderers = currentAnimationGO.GetComponentsInChildren<Renderer>();
             renderers[0].sharedMaterial = speechMaterial;
             renderers[1].sharedMaterial = speechMaterial;
-            
+
             //currentAnimationGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", speechTexture);
             currentAnimationGO.SetActive(true);
             speechAnnotation = new SpeechAnnotation(_video, _rightHand, _rightController, _head);
@@ -183,9 +186,27 @@ public class AnnotationManager
         }
     }
 
+    public void HandleFloorAnnotation()
+    {
+        if (!bFloor)
+        {
+            Renderer[] renderers = currentAnimationGO.GetComponentsInChildren<Renderer>();
+            renderers[0].sharedMaterial = scribblerMaterial; // TODO
+            renderers[1].sharedMaterial = scribblerMaterial;
+            //currentAnimationGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", scribblerTexture);
+            currentAnimationGO.SetActive(true);
+            floorAnnotation = new FloorAnnotation(_video, _rightHand, _rightController, inputManager.PointerColor, _head);
+            floorAnnotation.IsActive = true;
+            floorAnnotation.setID(currentAnnotationID);
+            currentAnnotationID++;
+            bFloor = true;
+        }
+    }
+
     public void DisableAnnotations()
     {
-        foreach (StaticAnnotation staticAnnotation in staticAnnotationList) {
+        foreach (StaticAnnotation staticAnnotation in staticAnnotationList)
+        {
             staticAnnotation.stop();
         }
     }
@@ -197,11 +218,13 @@ public class AnnotationManager
         if (bVisualEffect && visualEffectAnnotation != null) visualEffectAnnotation.reset();
         if (bScribbler && scribblerAnnotation != null) scribblerAnnotation.reset();
         if (bSpeechToText && speechAnnotation != null) speechAnnotation.reset();
+        if (bFloor && floorAnnotation != null) floorAnnotation.reset();
 
         bVisualEffect = false;
         bScribbler = false;
         bSpeechToText = false;
         bMark = false;
+        bFloor = false;
 
     }
 
@@ -217,7 +240,8 @@ public class AnnotationManager
 
     public void EditAnnotation()
     {
-        foreach(StaticAnnotation staticAnnotation in staticAnnotationList){
+        foreach (StaticAnnotation staticAnnotation in staticAnnotationList)
+        {
             currentAnnotationSelected = staticAnnotation.edit();
         }
     }
@@ -265,34 +289,34 @@ public class AnnotationManager
         }
     }
 
-	public void DrawAnnotationsOnTimeline()
-	{
-		GameObject annotationMarks = GameObject.Find ("AnnotationMarks");
-		if (annotationMarks != null)
-			GameObject.Destroy (annotationMarks);
-		GameObject slider = GameObject.Find ("Slider");
-		annotationMarks = new GameObject ("AnnotationMarks");
-		annotationMarks.transform.SetParent (slider.transform);
-		annotationMarks.transform.localPosition = Vector3.zero;
-		annotationMarks.transform.localScale = Vector3.one;
-		annotationMarks.transform.localRotation = Quaternion.identity;
-		foreach (StaticAnnotation sa in staticAnnotationList) 
-		{
-			float start = sa.getStart ();
-			float width = slider.GetComponent<RectTransform> ().rect.width;
-			float ratio = start / _video.getVideoDuration();
-			float xposition = (ratio * width) - (width / 2);
-			Sprite p =(Sprite) Resources.Load("Textures/Annotation", typeof(Sprite));
-			GameObject r = new GameObject ("Annotation");
-			r.transform.SetParent (annotationMarks.transform);
-			SpriteRenderer rend = r.AddComponent<SpriteRenderer>();
-			rend.sprite = p;
-			r.transform.localRotation = Quaternion.identity;
-			r.transform.localPosition = new Vector3 (xposition, 0, 0);
-			r.transform.localScale = Vector3.one;
+    public void DrawAnnotationsOnTimeline()
+    {
+        GameObject annotationMarks = GameObject.Find("AnnotationMarks");
+        if (annotationMarks != null)
+            GameObject.Destroy(annotationMarks);
+        GameObject slider = GameObject.Find("Slider");
+        annotationMarks = new GameObject("AnnotationMarks");
+        annotationMarks.transform.SetParent(slider.transform);
+        annotationMarks.transform.localPosition = Vector3.zero;
+        annotationMarks.transform.localScale = Vector3.one;
+        annotationMarks.transform.localRotation = Quaternion.identity;
+        foreach (StaticAnnotation sa in staticAnnotationList)
+        {
+            float start = sa.getStart();
+            float width = slider.GetComponent<RectTransform>().rect.width;
+            float ratio = start / _video.getVideoDuration();
+            float xposition = (ratio * width) - (width / 2);
+            Sprite p = (Sprite)Resources.Load("Textures/Annotation", typeof(Sprite));
+            GameObject r = new GameObject("Annotation");
+            r.transform.SetParent(annotationMarks.transform);
+            SpriteRenderer rend = r.AddComponent<SpriteRenderer>();
+            rend.sprite = p;
+            r.transform.localRotation = Quaternion.identity;
+            r.transform.localPosition = new Vector3(xposition, 0, 0);
+            r.transform.localScale = Vector3.one;
 
-		}
-	}
+        }
+    }
 
     public static bool RoughlyEqual(float a, float b)
     {
@@ -300,13 +324,13 @@ public class AnnotationManager
         return (Math.Abs(a - b) < treshold);
     }
 
-	// Update is called once per frame
-	public void Update () {
+    // Update is called once per frame
+    public void Update()
+    {
 
-        if(_video != null)
-		    currentTime = _video.getVideoTime();//+= Time.deltaTime;
-        
-        if (IsAnnotationActive) {
+
+        if (IsAnnotationActive)
+        {
 
             Debug.Log("number of static annotation = " + staticAnnotationList.Count);
             currentAnimationGO.transform.position = new Vector3(_rightHand.transform.position.x,
@@ -314,7 +338,7 @@ public class AnnotationManager
             Vector3 rot = Camera.main.transform.forward;
             rot.y = 0.0f;
             currentAnimationGO.transform.rotation = Quaternion.LookRotation(rot);
-      
+
             if (bVisualEffect)
             {
                 Debug.Log("Start highlightPoint Annotation");
@@ -323,29 +347,31 @@ public class AnnotationManager
                 if (!visualEffectAnnotation.IsActive)
                 {
                     currentAnimationGO.SetActive(false);
-                    if (visualEffectAnnotation.getHasBeenCreated()) { 
+                    if (visualEffectAnnotation.getHasBeenCreated())
+                    {
                         staticAnnotationList.Add(visualEffectAnnotation);
                         DrawAnnotationsOnTimeline();
                     }
                     bVisualEffect = false;
                 }
-               
+
             }
-            else if(bScribbler) 
+            else if (bScribbler)
             {
                 Debug.Log("Start Scribbler Annotation");
                 scribblerAnnotation.annotate();
-                
+
                 if (!scribblerAnnotation.IsActive)
                 {
                     currentAnimationGO.SetActive(false);
-                    if (scribblerAnnotation.getHasBeenCreated()) { 
+                    if (scribblerAnnotation.getHasBeenCreated())
+                    {
                         staticAnnotationList.Add(scribblerAnnotation);
                         DrawAnnotationsOnTimeline();
                     }
 
                     bScribbler = false;
-                
+
                 }
             }
             else if (bSpeechToText)
@@ -355,7 +381,8 @@ public class AnnotationManager
                 if (!speechAnnotation.IsActive)
                 {
                     currentAnimationGO.SetActive(false);
-                    if (speechAnnotation.getHasBeenCreated()) { 
+                    if (speechAnnotation.getHasBeenCreated())
+                    {
                         staticAnnotationList.Add(speechAnnotation);
                         DrawAnnotationsOnTimeline();
                     }
@@ -371,7 +398,8 @@ public class AnnotationManager
                 if (!markAnnotation.IsActive)
                 {
                     currentAnimationGO.SetActive(false);
-                    if (markAnnotation.getHasBeenCreated()) {
+                    if (markAnnotation.getHasBeenCreated())
+                    {
                         staticAnnotationList.Add(markAnnotation);
                         DrawAnnotationsOnTimeline();
                     }
@@ -379,15 +407,33 @@ public class AnnotationManager
                     bMark = false;
                 }
             }
-        }
-       IsAnnotationActive = bVisualEffect || bScribbler || bSpeechToText || bMark;
-        
+            else if (bFloor)
+            {
+                Debug.Log("Start Floor Annotation");
+                floorAnnotation.annotate();
 
-       if (!IsAnnotationActive) {
+                if (!floorAnnotation.IsActive)
+                {
+                    currentAnimationGO.SetActive(false);
+                    if (floorAnnotation.getHasBeenCreated())
+                    {
+                        staticAnnotationList.Add(floorAnnotation);
+                        DrawAnnotationsOnTimeline();
+                    }
+
+                    bFloor = false;
+
+                }
+            }
+        }
+        IsAnnotationActive = bVisualEffect || bScribbler || bSpeechToText || bMark || bFloor;
+
+        if (_video != null && staticAnnotationList.Count > 0)
+        {
+            currentTime = _video.getVideoTime();
             foreach (StaticAnnotation staticAnnotation in staticAnnotationList)
             {
-     
-                if (currentTime >= staticAnnotation.getStart() && currentTime < staticAnnotation.getStart() + staticAnnotation.getDuration()) 
+                if (currentTime >= staticAnnotation.getStart() && currentTime < staticAnnotation.getStart() + staticAnnotation.getDuration())
                 {
                     staticAnnotation.play();
                     //_video.Play();
@@ -396,7 +442,8 @@ public class AnnotationManager
                 {
                     staticAnnotation.stop();
                 }
+
             }
         }
-	}
+    }
 }

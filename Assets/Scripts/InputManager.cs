@@ -294,7 +294,11 @@ public class InputManager : MonoBehaviour {
             buttonImg.sprite = spriteButton;
         }
 
-        if (_video != null) _video.Close();
+        if (_video != null)
+        {
+            _video.Close();
+            SaveAnnotations();
+        }
 		_video = new CloudVideoPlayer(hit.name,this);
         buttonSelected = hit.transform.gameObject.GetComponent<Button>();
         Image img = buttonSelected.GetComponent<Image>();
@@ -302,6 +306,11 @@ public class InputManager : MonoBehaviour {
         _annotationManager.SetCloudVideo(_video);
 
 	}
+
+    void SaveAnnotations ()
+    {
+        //TODO!
+    }
 
 	void SelectColor(Collision collision)
     {
@@ -335,8 +344,12 @@ public class InputManager : MonoBehaviour {
 			case "voice":
 				_annotationManager.HandleSpeechAnnotation ();
 				break;
-				
-			case "mark":
+
+            case "floor":
+                _annotationManager.HandleFloorAnnotation();
+                break;
+
+            case "mark":
                 GameObject markMenu = GameObject.FindGameObjectWithTag("MarkMenu");
                 Transform panel = markMenu.transform.Find("Panel");
                 panel.gameObject.SetActive(true);
@@ -568,8 +581,9 @@ public class InputManager : MonoBehaviour {
         {
             int numberOfAnnotations = _annotationManager.staticAnnotationList.Count;
             StaticAnnotation lastAnnotation = _annotationManager.staticAnnotationList[numberOfAnnotations - 1];
-
+            lastAnnotation.reset();
             _annotationManager.staticAnnotationList.Remove(lastAnnotation);
+            _annotationManager.DrawAnnotationsOnTimeline();
 
             Debug.Log("pressed cancel annotation");
         }

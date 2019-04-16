@@ -76,7 +76,9 @@ public class ScribblerAnnotation : StaticAnnotation {
                 IsActive = false;
                 if(_myPoints.Count > 0)
                     _start = _myPoints[0].time;
-                //_duration = Time.deltaTime - _start + 1f;
+                _duration = _video.getVideoTime() - _start + 0.5f;
+                Debug.Log("start = " + _start);
+                Debug.Log("duration = " + _duration);
                 _hasBeenCreated = true;
                 Debug.Log("duration = " + _duration);
             }
