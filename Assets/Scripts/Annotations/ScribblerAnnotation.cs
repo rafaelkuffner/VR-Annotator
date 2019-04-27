@@ -4,13 +4,15 @@ using UnityEngine;
 using System;
 using System.Text;
 
-public class ScribblerAnnotation : StaticAnnotation {
+public class ScribblerAnnotation : StaticAnnotation
+{
 
     private GameObject lineRendererGO { get; set; }
     public LineRenderer lineRenderer { get; set; }
     public bool IsActive { get; set; }
 
-    struct PositionFrame {
+    struct PositionFrame
+    {
         public Vector3 position;
         public float time;
     }
@@ -19,15 +21,32 @@ public class ScribblerAnnotation : StaticAnnotation {
 
     public bool triggerPressed;
     private Vector3 midPoint;
-    
-    public ScribblerAnnotation(CloudVideoPlayer video, GameObject rightHand, SteamVR_Controller.Device rightController,Color c, GameObject head) :
+
+
+    public ScribblerAnnotation(CloudVideoPlayer video, GameObject rightHand, SteamVR_Controller.Device rightController, GameObject head) :
+      base(video, rightHand, rightController, head)
+    {
+        _myPoints = new List<PositionFrame>();
+        IsActive = false;
+        triggerPressed = false;
+        midPoint = Vector3.zero;
+
+        lineRendererGO = MonoBehaviour.Instantiate(Resources.Load("Prefabs/LineRendererPrefab")) as GameObject;
+        lineRenderer = lineRendererGO.GetComponent<LineRenderer>();
+        lineRenderer.material = new Material(Shader.Find("Legacy Shaders/Particles/Additive"));
+        lineRenderer.startColor = Color.cyan;
+        lineRenderer.endColor = Color.cyan;//new Color(c.r / 0.2f, c.g / 0.2f, c.b / 0.2f);
+        lineRenderer.positionCount = 0;
+    }
+
+    public ScribblerAnnotation(CloudVideoPlayer video, GameObject rightHand, SteamVR_Controller.Device rightController, Color c, GameObject head) :
         base(video, rightHand, rightController, head)
     {
         _myPoints = new List<PositionFrame>();
         IsActive = false;
         triggerPressed = false;
         midPoint = Vector3.zero;
- 
+
         lineRendererGO = MonoBehaviour.Instantiate(Resources.Load("Prefabs/LineRendererPrefab")) as GameObject;
         lineRenderer = lineRendererGO.GetComponent<LineRenderer>();
         lineRenderer.material = new Material(Shader.Find("Legacy Shaders/Particles/Additive"));
@@ -38,68 +57,61 @@ public class ScribblerAnnotation : StaticAnnotation {
 
     public override void annotate()
     {
-
-        Debug.Log("annotate method scribbler");
-
         if (!IsActive)
             _myPoints.Clear();
         else
         {
-           
+
             if (_rightController.GetPressDown(SteamVR_Controller.ButtonMask.Trigger))
-            { 
+            {
                 triggerPressed = true;
-                _start = _video.getVideoTime(); 
-                Debug.Log("start = " + _start);
+                _start = _video.getVideoTime();
             }
-            
-            if(triggerPressed)
+
+            if (triggerPressed)
             {
                 PositionFrame p;
                 p.position = _rightHand.transform.position;
                 p.time = _video.getVideoTime();
-				//p.time = Time.deltaTime;
-                
+                //p.time = Time.deltaTime;
+
                 _myPoints.Add(p);
 
                 if (_myPoints != null)
                 {
                     lineRenderer.positionCount = _myPoints.Count;
-                    lineRenderer.SetPosition(_myPoints.Count - 1,p.position);
+                    lineRenderer.SetPosition(_myPoints.Count - 1, p.position);
                 }
             }
 
-            if(_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger))
+            if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger))
             {
-               
+
                 triggerPressed = false;
                 IsActive = false;
-                if(_myPoints.Count > 0)
+                if (_myPoints.Count > 0)
                     _start = _myPoints[0].time;
                 _duration = _video.getVideoTime() - _start + 0.5f;
-                Debug.Log("start = " + _start);
-                Debug.Log("duration = " + _duration);
                 _hasBeenCreated = true;
-                Debug.Log("duration = " + _duration);
             }
-        } 
+        }
     }
 
 
     public override void play()
     {
-        
+
         lineRenderer.positionCount = 0;
-        int i =0;
+        int i = 0;
         foreach (PositionFrame p in _myPoints)
         {
             if (p.time <= _video.getVideoTime())
             {
-                lineRenderer.positionCount = i+1;
+                lineRenderer.positionCount = i + 1;
                 lineRenderer.SetPosition(i, p.position);
                 i++;
             }
-        
+
         }
         lineRendererGO.SetActive(true);
     }
@@ -118,13 +130,14 @@ public class ScribblerAnnotation : StaticAnnotation {
     public override void stop()
     {
         lineRendererGO.SetActive(false);
-        _annotationIdGO.SetActive(false);
+       // _annotationIdGO.SetActive(false);
     }
 
     public override int edit()
     {
-      
-        if (lineRendererGO.activeSelf) { 
+
+        if (lineRendererGO.activeSelf)
+        {
             _annotationIdGO.SetActive(true);
             Vector3 rot = _head.transform.forward;
             rot.y = 0.0f;
@@ -142,8 +155,9 @@ public class ScribblerAnnotation : StaticAnnotation {
 
     public override void increaseDuration()
     {
-        if (lineRendererGO.activeSelf) { 
-            _duration += 0.01f;
+        if (lineRendererGO.activeSelf)
+        {
+            _duration += 0.5f;
             _annotationID.text = Convert.ToString(Convert.ToString(Math.Round(_duration, 1)));
         }
         //Debug.Log("duration = " + _duration);
@@ -151,15 +165,16 @@ public class ScribblerAnnotation : StaticAnnotation {
 
     public override void decreaseDuration()
     {
-        if (lineRendererGO.activeSelf && _duration >= 0) { 
-            _duration -= 0.01f;
+        if (lineRendererGO.activeSelf && _duration >= 0)
+        {
+            _duration -= 0.5f;
             _annotationID.text = Convert.ToString(Convert.ToString(Math.Round(_duration, 1)));
         }
     }
 
     public override void disableDurationGO()
     {
-        if(_annotationIdGO.activeSelf)
+        if (_annotationIdGO.activeSelf)
             _annotationIdGO.SetActive(false);
     }
 
@@ -167,5 +182,42 @@ public class ScribblerAnnotation : StaticAnnotation {
     public override void reset()
     {
         if (lineRendererGO != null) GameObject.Destroy(lineRendererGO);
+    }
+
+    public override string serialize()
+    {
+        string res = getID() + "#" + getStart() + "#" + getDuration() + "#" + lineRenderer.startColor.r + "#" + lineRenderer.startColor.g + "#" + lineRenderer.startColor.b+"#"; 
+
+        bool first = true;
+        foreach(PositionFrame p in _myPoints)
+        {
+            if (first) first = false;
+            else res += "$";
+            res += p.position.x + "/"+ p.position.y + "/" + p.position.z + "/" + p.time;
+        }
+        return res;
+    }
+
+    public override void deserialize(string s)
+    {
+        string[] tokens = s.Split('#');
+        setID(int.Parse(tokens[0]));
+        setStart(float.Parse(tokens[1]));
+        setDuration(float.Parse(tokens[2]));
+        Color c = new Color(float.Parse(tokens[3]), float.Parse(tokens[4]), float.Parse(tokens[5]));
+
+        string[] positionsTimes = tokens[6].Split('$');
+        foreach(string pt in positionsTimes)
+        {
+            string[] token = pt.Split('/');
+            PositionFrame p;
+            p.position = new Vector3(float.Parse(token[0]), float.Parse(token[1]), float.Parse(token[2]));
+            p.time = float.Parse(token[3]);
+            _myPoints.Add(p);
+        }
+        lineRenderer.startColor = c;
+        lineRenderer.endColor = c;
+        
+        _hasBeenCreated = true;
     }
 }

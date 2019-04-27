@@ -36,14 +36,7 @@ public abstract class StaticAnnotation {
         _hasBeenCreated = false;
         _editing = false;
 
-        _annotationIdGO = GameObject.Instantiate(Resources.Load("Prefabs/AnnotationID")) as GameObject;
-        _annotationIdGO.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
-        _annotationID = _annotationIdGO.GetComponent<TextMesh>();
-        _annotationID.text = Convert.ToString(_duration);
-        _annotationIdGO.SetActive(false);
-
         _head = head;
-
     }
 
     public void setID(int id)
@@ -64,6 +57,12 @@ public abstract class StaticAnnotation {
     public float getStart()
     {
         return _start;
+    }
+
+    public void setAnnotationDurationTextMesh(TextMesh textMesh)
+    {
+        _annotationID = textMesh;
+        _annotationID.text = Convert.ToString(_duration);
     }
 
     public void setDuration(float duration)
@@ -105,4 +104,9 @@ public abstract class StaticAnnotation {
     public abstract void disableDurationGO();
 
     public abstract void reset();
+
+    public abstract string serialize();
+
+    public abstract void deserialize(string s);
+
 }

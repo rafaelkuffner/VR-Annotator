@@ -8,18 +8,19 @@ public class MarkAnnotation : StaticAnnotation
     public bool IsActive { get; set; }
     private bool triggerPressed;
     GameObject markMenu;
-    GameObject _rightPointer;
+  //  GameObject _rightPointer;
     GameObject _head;
     GameObject _markGO;
     private bool markNotPlaced;
- 
+    private string markName;
+
     public MarkAnnotation(CloudVideoPlayer video, GameObject rightHand, SteamVR_Controller.Device rightController,
-        GameObject head, GameObject rightPointer) :
+        GameObject head): //, GameObject rightPointer) :
         base(video, rightHand, rightController, head) 
     {
         IsActive = false;
         triggerPressed = false;
-        _rightPointer = rightPointer;
+        //_rightPointer = rightPointer;
         _head = head;
         _markGO = null;
         markNotPlaced = false;
@@ -34,7 +35,7 @@ public class MarkAnnotation : StaticAnnotation
             if (_markGO == null)
             {
 
-                _rightPointer.SetActive(true);
+              //  _rightPointer.SetActive(true);
                 Ray raycast = new Ray(_rightHand.transform.position, _rightHand.transform.forward);
                 RaycastHit hit;
                 bool bHit = Physics.Raycast(raycast, out hit);
@@ -49,14 +50,14 @@ public class MarkAnnotation : StaticAnnotation
                         {
                             if (b != null)
                             {
-                                Debug.Log("MARK = " + b.name);
-                                _rightPointer.SetActive(false);
+                                //_rightPointer.SetActive(false);
                                 _markGO = new GameObject();
                                 _markGO.transform.parent = _rightHand.transform;
                                 _markGO.transform.localPosition = new Vector3(0, 0, 0.1f);
                                 _markGO.transform.localRotation = Quaternion.identity;
                                 _markGO.transform.localScale = new Vector3(0.05f, 0.05f, 0.05f);
                                 SpriteRenderer sr = _markGO.AddComponent<SpriteRenderer>();
+                                markName = b.name;
                                 sr.sprite = (Sprite)Resources.Load(b.name, typeof(Sprite));
                             }
                         }
@@ -109,7 +110,7 @@ public class MarkAnnotation : StaticAnnotation
     public override void increaseDuration()
     {
         if (_markGO.activeSelf) { 
-            _duration += 0.01f;
+            _duration += 0.5f;
             _annotationID.text = Convert.ToString(Math.Round(_duration, 1));
         }
 
@@ -119,7 +120,7 @@ public class MarkAnnotation : StaticAnnotation
     public override void decreaseDuration()
     {
         if (_markGO.activeSelf && _duration >= 0) { 
-            _duration -= 0.01f;
+            _duration -= 0.5f;
             _annotationID.text = Convert.ToString(Math.Round(_duration, 1));
         }
     }
@@ -138,4 +139,32 @@ public class MarkAnnotation : StaticAnnotation
         if(_markGO != null)
             GameObject.Destroy(_markGO);
     }
+
+    public override string serialize()
+    {
+        return getID() + "#" + getStart() + "#" + getDuration() + "#" + markName + "#" 
+            + _markGO.transform.position.x + "#" + _markGO.transform.position.y + "#" + _markGO.transform.position.z;
+    }
+
+    public override void deserialize(string s)
+    {
+        string[] tokens = s.Split('#');
+        setID(int.Parse(tokens[0]));
+        setStart(float.Parse(tokens[1]));
+        setDuration(float.Parse(tokens[2]));
+        markName = tokens[3];
+
+        Vector3 pos = new Vector3(float.Parse(tokens[4]), float.Parse(tokens[5]), float.Parse(tokens[6]));
+
+        _markGO = new GameObject();
+        _markGO.transform.position = pos;
+        _markGO.transform.localRotation = Quaternion.identity;
+        _markGO.transform.localScale = new Vector3(0.05f, 0.05f, 0.05f);
+        SpriteRenderer sr = _markGO.AddComponent<SpriteRenderer>();
+        sr.sprite = (Sprite)Resources.Load(markName, typeof(Sprite));
+    
+        _hasBeenCreated = true;
+    }
+    
+
 }

@@ -20,7 +20,26 @@ public class FloorAnnotation : StaticAnnotation {
 
     public bool triggerPressed;
     private Vector3 midPoint;
-    
+
+    public FloorAnnotation(CloudVideoPlayer video, GameObject rightHand, SteamVR_Controller.Device rightController, GameObject head) :
+       base(video, rightHand, rightController, head)
+    {
+        _myPoints = new List<PositionFrame>();
+        IsActive = false;
+        triggerPressed = false;
+        midPoint = Vector3.zero;
+
+        floor = GameObject.Find("VRPlane");
+
+        lineRendererGO = MonoBehaviour.Instantiate(Resources.Load("Prefabs/LineRendererPrefab")) as GameObject;
+        lineRenderer = lineRendererGO.GetComponent<LineRenderer>();
+        lineRenderer.material = new Material(Shader.Find("Legacy Shaders/Particles/Additive"));
+        lineRenderer.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
+        lineRenderer.startColor = Color.cyan;
+        lineRenderer.endColor = Color.cyan;//new Color(c.r / 0.2f, c.g / 0.2f, c.b / 0.2f);
+        lineRenderer.positionCount = 0;
+    }
+
     public FloorAnnotation(CloudVideoPlayer video, GameObject rightHand, SteamVR_Controller.Device rightController,Color c, GameObject head) :
         base(video, rightHand, rightController, head)
     {
@@ -42,9 +61,6 @@ public class FloorAnnotation : StaticAnnotation {
 
     public override void annotate()
     {
-
-        Debug.Log("annotate method scribbler");
-
         if (!IsActive)
             _myPoints.Clear();
         else
@@ -54,7 +70,6 @@ public class FloorAnnotation : StaticAnnotation {
             { 
                 triggerPressed = true;
                 _start = _video.getVideoTime(); 
-                Debug.Log("start = " + _start);
             }
             
             if(triggerPressed)
@@ -81,10 +96,7 @@ public class FloorAnnotation : StaticAnnotation {
                 if(_myPoints.Count > 0)
                     _start = _myPoints[0].time;
                 _duration = _video.getVideoTime() - _start + 0.5f;
-                Debug.Log("start = " + _start);
-                Debug.Log("duration = " + _duration);
                 _hasBeenCreated = true;
-                Debug.Log("duration = " + _duration);
             }
         } 
     }
@@ -121,8 +133,10 @@ public class FloorAnnotation : StaticAnnotation {
 
     public override void stop()
     {
-        lineRendererGO.SetActive(false);
-        _annotationIdGO.SetActive(false);
+        if (lineRendererGO != null)
+            lineRendererGO.SetActive(false);
+        if(_annotationIdGO != null)
+            _annotationIdGO.SetActive(false);
     }
 
     public override int edit()
@@ -147,7 +161,7 @@ public class FloorAnnotation : StaticAnnotation {
     public override void increaseDuration()
     {
         if (lineRendererGO.activeSelf) { 
-            _duration += 0.01f;
+            _duration += 0.5f;
             _annotationID.text = Convert.ToString(Convert.ToString(Math.Round(_duration, 1)));
         }
         //Debug.Log("duration = " + _duration);
@@ -156,7 +170,7 @@ public class FloorAnnotation : StaticAnnotation {
     public override void decreaseDuration()
     {
         if (lineRendererGO.activeSelf && _duration >= 0) { 
-            _duration -= 0.01f;
+            _duration -= 0.5f;
             _annotationID.text = Convert.ToString(Convert.ToString(Math.Round(_duration, 1)));
         }
     }
@@ -171,5 +185,42 @@ public class FloorAnnotation : StaticAnnotation {
     public override void reset()
     {
         if (lineRendererGO != null) GameObject.Destroy(lineRendererGO);
+    }
+
+    public override string serialize()
+    {
+        string res = getID() + "#" + getStart() + "#" + getDuration() + "#" + lineRenderer.startColor.r + "#" + lineRenderer.startColor.g + "#" + lineRenderer.startColor.b + "#";
+
+        bool first = true;
+        foreach (PositionFrame p in _myPoints)
+        {
+            if (first) first = false;
+            else res += "$";
+            res += p.position.x + "/" + p.position.y + "/" + p.position.z + "/" + p.time;
+        }
+        return res;
+    }
+
+    public override void deserialize(string s)
+    {
+        string[] tokens = s.Split('#');
+        setID(int.Parse(tokens[0]));
+        setStart(float.Parse(tokens[1]));
+        setDuration(float.Parse(tokens[2]));
+        Color c = new Color(float.Parse(tokens[3]), float.Parse(tokens[4]), float.Parse(tokens[5]));
+
+        string[] positionsTimes = tokens[6].Split('$');
+        foreach (string pt in positionsTimes)
+        {
+            string[] token = pt.Split('/');
+            PositionFrame p;
+            p.position = new Vector3(float.Parse(token[0]), float.Parse(token[1]), float.Parse(token[2]));
+            p.time = float.Parse(token[3]);
+            _myPoints.Add(p);
+        }
+        lineRenderer.startColor = c;
+        lineRenderer.endColor = c;
+
+        _hasBeenCreated = true;
     }
 }

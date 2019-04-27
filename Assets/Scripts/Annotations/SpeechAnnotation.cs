@@ -10,10 +10,12 @@ public class SpeechAnnotation : StaticAnnotation
     private bool triggerPressed;
     private float _recordingTime;
     private GameObject audioVisualCueGO;
+    string videoName;
 
     public SpeechAnnotation(CloudVideoPlayer video, GameObject rightHand, SteamVR_Controller.Device rightController, GameObject head) :
         base(video, rightHand, rightController, head)
     {
+        videoName = video.configFile;
         audioSourceGO = MonoBehaviour.Instantiate(Resources.Load("Prefabs/AudioSourcePrefab")) as GameObject;
         audioSource = audioSourceGO.GetComponent<AudioSource>();
         IsActive = false;
@@ -23,8 +25,6 @@ public class SpeechAnnotation : StaticAnnotation
 
     public override void annotate()
     {
-        Debug.Log("annotate method speech");
-
         if (!IsActive)
             audioSource = null;
         else
@@ -35,7 +35,7 @@ public class SpeechAnnotation : StaticAnnotation
                 triggerPressed = true;
                 Debug.Log("start = " + _start);
                 _start = _video.getVideoTime();
-                audioSource.clip = Microphone.Start("2- HTC Vive", true, 120, 44100); // lenght???
+                audioSource.clip = Microphone.Start("Microfone (HTC Vive)", true, 120, 44100); // lenght???
                 _recordingTime = 0;
             }
             if (triggerPressed)
@@ -44,7 +44,7 @@ public class SpeechAnnotation : StaticAnnotation
             }
             if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger))
             {
-                Microphone.End("2- HTC Vive");
+                Microphone.End("Microfone (HTC Vive)");
                 audioVisualCueGO = new GameObject();
                 audioVisualCueGO.transform.position = _rightHand.transform.position;
                 audioVisualCueGO.transform.rotation = Quaternion.identity;
@@ -56,7 +56,6 @@ public class SpeechAnnotation : StaticAnnotation
                 IsActive = false;
                 _hasBeenCreated = true;
                 _duration = _recordingTime;
-                Debug.Log("Duration is " + _duration);
             }
         }
     }
@@ -106,5 +105,39 @@ public class SpeechAnnotation : StaticAnnotation
         {
             GameObject.Destroy(audioSourceGO);
         }
+    }
+
+    public override string serialize()
+    {
+        string audioName = "audioAnnotation"+videoName+getID();
+       SavWav.Save(audioName, audioSource.clip);
+      
+        return getID() + "#" + getStart() + "#" + getDuration() + "#" + audioName + "#"
+            + audioVisualCueGO.transform.position.x + "#" + audioVisualCueGO.transform.position.y + "#" + audioVisualCueGO.transform.position.z;
+    }
+
+    public override void deserialize(string s)
+    {
+        string[] tokens = s.Split('#');
+        setID(int.Parse(tokens[0]));
+        setStart(float.Parse(tokens[1]));
+        setDuration(float.Parse(tokens[2]));
+        string audioName = tokens[3];
+
+        WAV wav = new WAV(audioName);
+        AudioClip audioClip = AudioClip.Create(audioName, wav.SampleCount, 1, wav.Frequency,false);
+        audioClip.SetData(wav.LeftChannel, 0);
+        audioSource.clip = audioClip;
+
+        Vector3 pos = new Vector3(float.Parse(tokens[4]), float.Parse(tokens[5]), float.Parse(tokens[6]));
+
+        audioVisualCueGO = new GameObject();
+        audioVisualCueGO.transform.position = pos;
+        audioVisualCueGO.transform.localRotation = Quaternion.identity;
+        audioVisualCueGO.transform.localScale = new Vector3(0.05f, 0.05f, 0.05f);
+        SpriteRenderer sr = audioVisualCueGO.AddComponent<SpriteRenderer>();
+        sr.sprite = (Sprite)Resources.Load("Sprites/microphone", typeof(Sprite));
+
+        _hasBeenCreated = true;
     }
 }

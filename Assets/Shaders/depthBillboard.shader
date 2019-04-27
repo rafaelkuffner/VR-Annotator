@@ -207,7 +207,7 @@ Shader "Custom/Depth Billboard"
 
 					float4 c = tex2Dlod(_ColorTex,float4(v.vertex.x,v.vertex.y,0,0));
 					int dValue = textureToDepth(v.vertex.x,v.vertex.y);
-					if(dValue == 0 || c.a == 0)	{
+					if(dValue == 0 || c.a == 0 || dValue > 3800)	{
 						output.color = float4(0,0,0,0);
 						return output;
 						}

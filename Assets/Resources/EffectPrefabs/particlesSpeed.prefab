@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 199150006823797898}
   - component: {fileID: 8768641321249192011}
   m_Layer: 0
-  m_Name: particlesSpeed
+  m_Name: ParticlesSpeed
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

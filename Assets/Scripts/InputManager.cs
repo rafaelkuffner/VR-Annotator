@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using Valve.VR;
+using System.Xml;
 
 public class InputManager : MonoBehaviour {
 
@@ -155,7 +156,6 @@ public class InputManager : MonoBehaviour {
         // only annotates when a dataset is selected
         if (_video != null)
         {
-            Debug.Log("collision with = " + collision.transform.name);
             if (collision.transform.name.Contains("annotation") && !itemSelected && _rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger))
             {
                 //collision.transform.position = new Vector3 (collision.transform.position.x - 0.05f, collision.transform.position.y , collision.transform.position.z);
@@ -171,7 +171,6 @@ public class InputManager : MonoBehaviour {
                 if (AnnotationMenuItemElements.Length == 2)
                 {
                     string annotationType = AnnotationMenuItemElements[1];
-                    Debug.Log("annotation Type = " + annotationType);
                     SelectAnnotationType(annotationType);
                 }
 
@@ -190,7 +189,6 @@ public class InputManager : MonoBehaviour {
                 if (visualEffectMenuItemElements.Length == 2)
                 {
                     string visualEffect = visualEffectMenuItemElements[1];
-                    Debug.Log("visualEffect = " + visualEffect);
                     SelectVisualEffectType(visualEffect);
                 }
             }
@@ -202,7 +200,6 @@ public class InputManager : MonoBehaviour {
                 if (representationMenuItemElements.Length == 2)
                 {
                     string dataRepresentation = representationMenuItemElements[1];
-                    Debug.Log("dataRepresentation = " + dataRepresentation);
                     SetRepresentation(dataRepresentation);
                 }
             }
@@ -217,8 +214,6 @@ public class InputManager : MonoBehaviour {
 
         if(collision.transform != null && collision.transform.name.Contains(".ini") && _rightController.GetPressUp(SteamVR_Controller.ButtonMask.Trigger))
         {
-            Debug.Log("Clicked Cloud Menu");
-            Debug.Log("data = " + collision.transform.name);
             SelectDataset(collision.gameObject);
         }
         isChoosingColor = false;
@@ -247,11 +242,6 @@ public class InputManager : MonoBehaviour {
             _annotationManager.IsAnnotationActive = false;
             _annotationManager.Reset();
         }
-    }
-
-    IEnumerator WaitForSeconds(int seconds)
-    {
-        yield return new WaitForSeconds(seconds);
     }
 
     public void SetPlaybackSpeed(float speed)
@@ -299,17 +289,55 @@ public class InputManager : MonoBehaviour {
             _video.Close();
             SaveAnnotations();
         }
+
 		_video = new CloudVideoPlayer(hit.name,this);
         buttonSelected = hit.transform.gameObject.GetComponent<Button>();
         Image img = buttonSelected.GetComponent<Image>();
         img.sprite = spriteButtonSelected;
+        LoadAnnotations();
         _annotationManager.SetCloudVideo(_video);
 
 	}
 
+    void LoadAnnotations()
+    {
+        _annotationManager.resetStaticAnnotationList();
+        string name = _video.configFile;
+        name = name.Replace(".ini", ".xml");
+        if (System.IO.File.Exists(name))
+        {
+            XmlDocument d = new XmlDocument();
+            d.Load(XmlReader.Create(name));
+            XmlNodeList l = d.SelectNodes("/Annotations/Annotation");
+            foreach(XmlNode n in l)
+            {
+                string type = n.Attributes["type"].Value;
+                System.Type t = System.Type.GetType(type);
+                StaticAnnotation a = System.Activator.CreateInstance(t, _video, _rightHand, _rightController, _head) as StaticAnnotation;
+                a.deserialize(n.InnerText);
+                _annotationManager.staticAnnotationList.Add(a);
+            }
+        }
+    }
     void SaveAnnotations ()
     {
-        //TODO!
+        string name = _video.configFile;
+        name = name.Replace(".ini", ".xml");
+        using (XmlWriter writer = XmlWriter.Create(name))
+        {
+            writer.WriteStartDocument();
+            writer.WriteStartElement("Annotations");
+            foreach (StaticAnnotation a in _annotationManager.staticAnnotationList)
+            {
+                writer.WriteStartElement("Annotation");
+                writer.WriteAttributeString("type", a.GetType().ToString());
+                writer.WriteRaw(a.serialize());
+                writer.WriteEndElement();
+            }
+            writer.WriteEndElement();
+            writer.WriteEndDocument();
+            writer.Close();
+        }
     }
 
 	void SelectColor(Collision collision)
@@ -370,11 +398,11 @@ public class InputManager : MonoBehaviour {
 			_annotationManager.HandleVisualEffectsAnnotation (_head, _rightPointer, effectType);
 			break;
 
-		case "particles":
+		case "particlesSpeed":
 			_annotationManager.HandleVisualEffectsAnnotation (_head, _rightPointer, effectType);
 			break;
 
-		case "highlight": 
+		case "highlightSpeed": 
 			_annotationManager.HandleVisualEffectsAnnotation (_head, _rightPointer, effectType);
 			break;
 
@@ -459,17 +487,17 @@ public class InputManager : MonoBehaviour {
                     case "annotation":
                         if (!_annotationManager.IsAnnotationActive)
                             SelectAnnotationType(tmp[1]);
-                        Debug.Log("annotation");
+                        //Debug.Log("annotation");
                         break;
 
                     case "visualeffect":
                         if (!_annotationManager.IsAnnotationActive)
                             SelectVisualEffectType(tmp[1]);
-                        Debug.Log("visualeffects");
+                        //Debug.Log("visualeffects");
                         break;
 
                     default:
-                        Debug.Log("Invalid Annotation Type");
+                        //Debug.Log("Invalid Annotation Type");
                         break;
                 }
             }
@@ -499,7 +527,7 @@ public class InputManager : MonoBehaviour {
             bool bHit = Physics.Raycast(raycast, out hit);
             if (bHit && hit.collider.gameObject.name.Equals("VRPlane"))
             {
-                Debug.Log("colide with = " + hit.collider.gameObject.name);
+                //Debug.Log("colide with = " + hit.collider.gameObject.name);
                 GameObject rig = GameObject.Find("[CameraRig]");
                 Vector3 camerapos = Camera.main.transform.localPosition;
                 rig.transform.position = new Vector3(hit.point.x-camerapos.x, rig.transform.position.y, hit.point.z-camerapos.z);
@@ -577,7 +605,7 @@ public class InputManager : MonoBehaviour {
 
     void HandleCancelAnnotation()
     {
-        if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Touchpad) && _video != null && _annotationManager.staticAnnotationList.Count > 0)
+        if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.ApplicationMenu) && _video != null && _annotationManager.staticAnnotationList.Count > 0)
         {
             int numberOfAnnotations = _annotationManager.staticAnnotationList.Count;
             StaticAnnotation lastAnnotation = _annotationManager.staticAnnotationList[numberOfAnnotations - 1];
@@ -585,7 +613,28 @@ public class InputManager : MonoBehaviour {
             _annotationManager.staticAnnotationList.Remove(lastAnnotation);
             _annotationManager.DrawAnnotationsOnTimeline();
 
-            Debug.Log("pressed cancel annotation");
+            //Debug.Log("pressed cancel annotation");
+        }
+    }
+
+    void HandleDuration()
+    {
+        if (_rightController.GetPressUp(SteamVR_Controller.ButtonMask.Touchpad) && _video != null && currentItem != null)
+        {
+            Vector2 touchpad = _rightController.GetAxis(EVRButtonId.k_EButton_SteamVR_Touchpad);
+
+            if (touchpad.x > 0.7f)
+            {
+                //print("Increase Duration");
+                _annotationManager.IncrementDuration();
+               
+            }
+            else if (touchpad.x < -0.7f)
+            {
+                //print("Decrease Duration");
+                _annotationManager.DecreaseDuration();
+
+            }
         }
     }
 
@@ -601,10 +650,11 @@ public class InputManager : MonoBehaviour {
             _annotationManager.SetRightHandController(_rightController);
             _annotationManager.SetRightPointer(_rightPointer);
             _annotationManager.SetHead(_head);
+            _annotationManager.SetAnnotationDurationGO();
             _annotationManager.Update();
         }
 
-        if (_menu == MenuOpened.AnnotationEdit)
+    /*    if (_menu == MenuOpened.AnnotationEdit)
         {
             _menuGO.transform.position = new Vector3(_rightHand.transform.position.x,
                      _rightHand.transform.position.y + 0.15f, _rightHand.transform.position.z);
@@ -612,7 +662,7 @@ public class InputManager : MonoBehaviour {
             rot.y = 0.0f;
             _menuGO.transform.rotation = Quaternion.LookRotation(rot);
             EditAnnotations();
-        }
+        } */
 
         // handle Annotations
         HandleAnnotations();
@@ -626,6 +676,9 @@ public class InputManager : MonoBehaviour {
         // handle Cancel Annotation
         HandleCancelAnnotation();
 
+        // handle Duration
+        HandleDuration();
+
     }
 
     private void OnApplicationQuit()
@@ -634,6 +687,7 @@ public class InputManager : MonoBehaviour {
         {
             _video.Close();
         }
+        SaveAnnotations();
     }
 }
 

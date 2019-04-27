@@ -31,12 +31,14 @@ public class AnnotationManager
     private CloudVideoPlayer _video;
     private GameObject _head;
     private GameObject _rightPointer;
+    private GameObject _annotationDurationGO;
 
     private ScribblerAnnotation scribblerAnnotation;
     private VisualEffectAnnotation visualEffectAnnotation;
     private MarkAnnotation markAnnotation;
     private SpeechAnnotation speechAnnotation;
     private FloorAnnotation floorAnnotation;
+    private StaticAnnotation currentAnnotation;
 
     private InputManager inputManager;
 
@@ -69,6 +71,16 @@ public class AnnotationManager
     public void SetHead(GameObject head)
     {
         _head = head;
+    }
+
+    public void SetAnnotationDurationGO()
+    {
+        //_annotationIdGO = GameObject.Instantiate(Resources.Load("Prefabs/Duration")) as GameObject;
+        _annotationDurationGO = GameObject.Find("Duration");
+        //_annotationIdGO.transform.localScale = new Vector3(0.01f, 0.01f, 0.01f);
+        //_annotationID = _annotationDurationGO.GetComponent<TextMesh>();
+        //_annotationID.text = Convert.ToString(_duration);
+        //_annotationIdGO.SetActive(false);
     }
 
     // Use this for initialization
@@ -105,6 +117,7 @@ public class AnnotationManager
 
         currentTime = 0.0f;
         currentAnnotationID = 0;
+        currentAnnotation = null;
 
         inputManager = GameObject.Find("Controller (right)").GetComponentInChildren<InputManager>();
         currentAnnotationSelected = -1;
@@ -122,8 +135,9 @@ public class AnnotationManager
 
             //currentAnimationGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", highlightPointsTexture);
             currentAnimationGO.SetActive(true);
-            visualEffectAnnotation = new VisualEffectAnnotation(_video, _rightHand, _rightController, _head, _rightPointer, inputManager.PointerColor, effectType);
+            currentAnnotation = visualEffectAnnotation = new VisualEffectAnnotation(_video, _rightHand, _rightController, _head, inputManager.PointerColor, effectType);
             visualEffectAnnotation.IsActive = true;
+            visualEffectAnnotation.setAnnotationDurationTextMesh(_annotationDurationGO.GetComponent<TextMesh>());
             visualEffectAnnotation.setID(currentAnnotationID);
             currentAnnotationID++;
             bVisualEffect = true;
@@ -140,8 +154,9 @@ public class AnnotationManager
             renderers[1].sharedMaterial = scribblerMaterial;
             //currentAnimationGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", scribblerTexture);
             currentAnimationGO.SetActive(true);
-            scribblerAnnotation = new ScribblerAnnotation(_video, _rightHand, _rightController, inputManager.PointerColor, _head);
+            currentAnnotation = scribblerAnnotation = new ScribblerAnnotation(_video, _rightHand, _rightController, inputManager.PointerColor, _head);
             scribblerAnnotation.IsActive = true;
+            scribblerAnnotation.setAnnotationDurationTextMesh(_annotationDurationGO.GetComponent<TextMesh>());
             scribblerAnnotation.setID(currentAnnotationID);
             currentAnnotationID++;
             bScribbler = true;
@@ -159,8 +174,9 @@ public class AnnotationManager
 
             //currentAnimationGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", markTexture);
             currentAnimationGO.SetActive(true);
-            markAnnotation = new MarkAnnotation(_video, _rightHand, _rightController, _head, _rightPointer);
+            currentAnnotation = markAnnotation = new MarkAnnotation(_video, _rightHand, _rightController, _head);
             markAnnotation.IsActive = true;
+            markAnnotation.setAnnotationDurationTextMesh(_annotationDurationGO.GetComponent<TextMesh>());
             markAnnotation.setID(currentAnnotationID);
             currentAnnotationID++;
             bMark = true;
@@ -178,8 +194,9 @@ public class AnnotationManager
 
             //currentAnimationGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", speechTexture);
             currentAnimationGO.SetActive(true);
-            speechAnnotation = new SpeechAnnotation(_video, _rightHand, _rightController, _head);
+            currentAnnotation = speechAnnotation = new SpeechAnnotation(_video, _rightHand, _rightController, _head);
             speechAnnotation.IsActive = true;
+            speechAnnotation.setAnnotationDurationTextMesh(_annotationDurationGO.GetComponent<TextMesh>());
             speechAnnotation.setID(currentAnnotationID);
             currentAnnotationID++;
             bSpeechToText = true;
@@ -195,8 +212,9 @@ public class AnnotationManager
             renderers[1].sharedMaterial = scribblerMaterial;
             //currentAnimationGO.GetComponent<Renderer>().sharedMaterial.SetTexture("_MainTex", scribblerTexture);
             currentAnimationGO.SetActive(true);
-            floorAnnotation = new FloorAnnotation(_video, _rightHand, _rightController, inputManager.PointerColor, _head);
+            currentAnnotation = floorAnnotation = new FloorAnnotation(_video, _rightHand, _rightController, inputManager.PointerColor, _head);
             floorAnnotation.IsActive = true;
+            floorAnnotation.setAnnotationDurationTextMesh(_annotationDurationGO.GetComponent<TextMesh>());
             floorAnnotation.setID(currentAnnotationID);
             currentAnnotationID++;
             bFloor = true;
@@ -248,10 +266,11 @@ public class AnnotationManager
 
     public void IncrementDuration()
     {
-        foreach (StaticAnnotation staticAnnotation in staticAnnotationList)
+        currentAnnotation.increaseDuration();
+       /* foreach (StaticAnnotation staticAnnotation in staticAnnotationList)
         {
             staticAnnotation.increaseDuration();
-        }
+        } */
     }
 
     public void DisableDurationGO()
@@ -264,10 +283,11 @@ public class AnnotationManager
 
     public void DecreaseDuration()
     {
-        foreach (StaticAnnotation staticAnnotation in staticAnnotationList)
+        currentAnnotation.decreaseDuration();
+        /*foreach (StaticAnnotation staticAnnotation in staticAnnotationList)
         {
             staticAnnotation.decreaseDuration();
-        }
+        }*/
     }
 
     public void DeleteAnnotation()
@@ -332,7 +352,6 @@ public class AnnotationManager
         if (IsAnnotationActive)
         {
 
-            Debug.Log("number of static annotation = " + staticAnnotationList.Count);
             currentAnimationGO.transform.position = new Vector3(_rightHand.transform.position.x,
                     _rightHand.transform.position.y + 0.075f, _rightHand.transform.position.z);
             Vector3 rot = Camera.main.transform.forward;
@@ -341,7 +360,7 @@ public class AnnotationManager
 
             if (bVisualEffect)
             {
-                Debug.Log("Start highlightPoint Annotation");
+                //Debug.Log("Start highlightPoint Annotation");
                 visualEffectAnnotation.annotate();
 
                 if (!visualEffectAnnotation.IsActive)
@@ -358,7 +377,7 @@ public class AnnotationManager
             }
             else if (bScribbler)
             {
-                Debug.Log("Start Scribbler Annotation");
+                //Debug.Log("Start Scribbler Annotation");
                 scribblerAnnotation.annotate();
 
                 if (!scribblerAnnotation.IsActive)
@@ -376,7 +395,7 @@ public class AnnotationManager
             }
             else if (bSpeechToText)
             {
-                Debug.Log("Start SpeechToText Annotation");
+                //Debug.Log("Start SpeechToText Annotation");
                 speechAnnotation.annotate();
                 if (!speechAnnotation.IsActive)
                 {
@@ -392,7 +411,7 @@ public class AnnotationManager
 
             else if (bMark)
             {
-                Debug.Log("Start Mark Annotation");
+                //Debug.Log("Start Mark Annotation");
                 markAnnotation.annotate();
 
                 if (!markAnnotation.IsActive)
@@ -409,7 +428,7 @@ public class AnnotationManager
             }
             else if (bFloor)
             {
-                Debug.Log("Start Floor Annotation");
+                //Debug.Log("Start Floor Annotation");
                 floorAnnotation.annotate();
 
                 if (!floorAnnotation.IsActive)
@@ -431,8 +450,10 @@ public class AnnotationManager
         if (_video != null && staticAnnotationList.Count > 0)
         {
             currentTime = _video.getVideoTime();
+            Debug.Log("number of annotations = " + staticAnnotationList.Count);
             foreach (StaticAnnotation staticAnnotation in staticAnnotationList)
             {
+                Debug.Log("duration = " + staticAnnotation.getDuration());
                 if (currentTime >= staticAnnotation.getStart() && currentTime < staticAnnotation.getStart() + staticAnnotation.getDuration())
                 {
                     staticAnnotation.play();
