@@ -91,7 +91,7 @@ public class ScribblerAnnotation : StaticAnnotation
                 IsActive = false;
                 if (_myPoints.Count > 0)
                     _start = _myPoints[0].time;
-                _duration = _video.getVideoTime() - _start + 0.5f;
+                _duration += _video.getVideoTime() - _start;
                 _hasBeenCreated = true;
             }
         }

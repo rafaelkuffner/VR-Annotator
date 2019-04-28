@@ -130,6 +130,11 @@ public class InputManager : MonoBehaviour {
 
         spriteButtonSelected = (Sprite)Resources.Load("Textures/white", typeof(Sprite));
         spriteButton = (Sprite)Resources.Load("Textures/border2", typeof(Sprite));
+
+       
+       
+   
+
     }
 
     void EnableRightPointer()
@@ -641,6 +646,7 @@ public class InputManager : MonoBehaviour {
     // Update is called once per frame
     void Update () {
 
+
         if (_rightObj.index == SteamVR_TrackedObject.EIndex.None || _leftObj.index == SteamVR_TrackedObject.EIndex.None) return;
         _rightController = SteamVR_Controller.Input((int)_rightObj.index);
         _leftController = SteamVR_Controller.Input((int)_leftObj.index);
@@ -678,6 +684,7 @@ public class InputManager : MonoBehaviour {
 
         // handle Duration
         HandleDuration();
+
 
     }
 
